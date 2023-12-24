@@ -1,0 +1,30 @@
+manifest_version: 1
+id: "catalog://test_db/table_csv/v1"
+database: test_db
+table: table_csv
+version: v1
+author: robot@testing.com
+pond_version: "xri://com.nagra.insight/ingestion/ingest/1.0.0-SNAPSHOT-1563266027563"
+date_time: "2019-07-11 16:48:58"
+schema:
+  data:
+  - name: _c0
+    type: STRING
+  - name: _c1
+    type: STRING
+  - name: _c2
+    type: STRING
+  - name: _c3
+    type: STRING
+stats:
+  partitions_count: 1
+  total_size: 172
+  count_rows: 5
+storage:
+  format: csv
+  compressed: false
+  parameters:
+    delimiter: "|"
+  location: "/table_csv"
+metadata:
+  tier: raw

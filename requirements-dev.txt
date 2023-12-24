@@ -1,0 +1,11 @@
+-r requirements.txt
+-r requirements-pandas.txt
+-r requirements-dask.txt
+-r requirements-matplotlib.txt
+-r requirements-git.txt
+flake8==4.0.*
+jupyter==1.*
+mypy==0.991
+pytest==7.2.*
+yapf==0.32.*
+mkdocs

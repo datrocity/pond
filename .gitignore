@@ -1,0 +1,27 @@
+# OS specific
+.DS_Store
+
+# Editors
+.vscode
+.idea
+*.swp
+
+# Python
+.venv/
+build/
+_build/
+dist/
+eggs/
+.eggs/
+sdist/
+*.egg-info/
+*.egg
+*.pyc
+__pycache__/
+tests-reports/
+.mypy_cache/
+.pytest_cache/
+.env
+
+# mkdocs
+site/
