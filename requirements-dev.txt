@@ -8,4 +8,5 @@ jupyter==1.*
 mypy==0.991
 pytest==7.2.*
 yapf==0.32.*
-mkdocs
+sphinx
+sphinx_rtd_theme
