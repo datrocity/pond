@@ -1,6 +1,7 @@
 import json
 
 from pond.artifact import Artifact
+from pond.artifact.artifact_registry import global_artifact_registry
 from pond.conventions import TXT_ENCODING
 
 
@@ -26,3 +27,6 @@ class DictArtifact(Artifact):
         dict_['__metadata__'] = {str(k): str(v) for k, v in self.metadata.items()}
         txt = json.dumps(dict_)
         file_.write(str.encode(txt, TXT_ENCODING))
+
+
+global_artifact_registry.register(artifact_class=DictArtifact, data_class=dict, format='json')
