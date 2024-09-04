@@ -12,11 +12,11 @@ def test_register_on_package_import():
     from pond.artifact.artifact_registry import global_artifact_registry
 
     expected_classes = [
+        pd.DataFrame,
+        Figure,
+        Image,
         np.array,
         dict,
-        pd.DataFrame,
-        Image,
-        Figure,
     ]
     for class_ in expected_classes:
         artifact_classes = global_artifact_registry.get_available_artifacts(class_)
