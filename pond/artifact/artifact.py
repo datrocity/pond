@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Type
 
+import joblib
+
 
 class Artifact(ABC):
     """ Knows how to read and write one type of artifact.
@@ -44,6 +46,7 @@ class Artifact(ABC):
             The metadata keys and values will be stored as strings.
         """
         self.data = data
+        self.data_hash = self._data_hash()
         if metadata is None:
             metadata = {}
         self.metadata = metadata
@@ -177,6 +180,9 @@ class Artifact(ABC):
         """
         pass
 
+    def _data_hash(self):
+        return joblib.hash(self.data)
+
     def get_artifact_metadata(self):
         """
         This is not the user metadata!
@@ -185,4 +191,8 @@ class Artifact(ABC):
         -------
 
         """
-        return None
+        artifact_metadata = {
+            'data_hash': self.data_hash,
+        }
+        artifact_metadata_source = DictMetadataSource(name='artifact', metadata=artifact_metadata)
+        return artifact_metadata_source

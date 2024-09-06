@@ -53,3 +53,17 @@ def test_write(tmp_path):
     # check that write_bytes has been  called with the right arguments
     assert artifact.filename == path
     assert artifact.write_kwargs == kwargs
+
+
+def test_data_hash(tmp_path):
+    data1 = [1, 2, 3]
+    artifact1 = MockArtifact(data1)
+
+    data2 = [1, 2, 3]
+    artifact2 = MockArtifact(data2)
+
+    data3 = [4, 5, 6]
+    artifact3 = MockArtifact(data3)
+
+    assert artifact1.data_hash == artifact2.data_hash
+    assert artifact1.data_hash != artifact3.data_hash
