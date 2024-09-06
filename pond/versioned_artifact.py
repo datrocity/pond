@@ -176,7 +176,7 @@ class VersionedArtifact:
               manifest: Manifest,
               version_name: Optional[Union[str, VersionName]] = None,
               write_mode: WriteMode = WriteMode.ERROR_IF_EXISTS):
-        """ Write some data to storage.
+        """ Write data as a versioned artifact.
 
         Parameters
         ----------
@@ -188,7 +188,7 @@ class VersionedArtifact:
             Version name, given as a string (more common) or as VersionName instance. If None,
             the latest version name for the given artifact is used.
         write_mode: WriteMode
-            Write mode, either WriteMode.ERROR_IF_EXISTS or WriteMode.OVERWRITE.
+            Write mode, see `pond.conventions.WriteMode` for possible values.
 
         Raises
         ------
