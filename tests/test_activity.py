@@ -139,6 +139,16 @@ def test_read_artifact(activity):
     assert artifact.metadata == metadata
 
 
+def test_read_manifest(activity):
+    """ Can read version manifest. """
+    data = 'test_data'
+    metadata = {'test': 'xyz'}
+    version = activity.write(data, name='foo', artifact_class=MockArtifact, metadata=metadata)
+
+    manifest = activity.read_manifest('foo', version_name='v1')
+    assert manifest.collect() == version.manifest.collect()
+
+
 def test_activity_metadata():
     author = 'John Doe'
     source = 'test_pond.py'
