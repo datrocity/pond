@@ -18,25 +18,28 @@ class MockArtifact(Artifact):
         return basename
 
 
-def test_read(tmp_path):
+def test_read_bytes(tmp_path):
     kwargs = {'c': 3}
     path = str(tmp_path / "filename.ext")
     with open(path, 'wb') as f:
         f.write(b'abc')
 
-    artifact = MockArtifact.read(path, **kwargs)
+    with open(path, 'rb') as f:
+        artifact = MockArtifact.read_bytes(f, **kwargs)
+
     # check that read_bytes has been called with the right arguments
     assert artifact.filename == path
     assert artifact.read_kwargs == kwargs
 
 
-def test_read_with_external_metadata(tmp_path):
+def test_read_bytes_with_external_metadata(tmp_path):
     path = str(tmp_path / "filename.ext")
     with open(path, 'wb') as f:
         f.write(b'abc')
 
     external_metadata = {'blah': 4}
-    artifact = MockArtifact.read(path, metadata=external_metadata)
+    with open(path, 'rb') as f:
+        artifact = MockArtifact.read_bytes(f, metadata=external_metadata)
     # check that read_bytes has been called with the right arguments
     assert artifact.filename == path
     assert artifact.metadata == external_metadata
