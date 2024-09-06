@@ -11,8 +11,12 @@ DataType = TypeVar('DataType')
 class WriteMode(str, Enum):
     """Version write save modes"""
 
-    #: If a version already exists, it is first deleted and then written
+    #: If a version already exists, it is first deleted and then re-written
     OVERWRITE = 'overwrite'
+    #: If a version already exists, and the data is the identical, it is first deleted and then
+    #: re-written. Otherwise, a new version is created. It is not possible to WRITE-ON-CHANGE a
+    #: version other than the latest one.
+    WRITE_ON_CHANGE = 'writeonchange'
     #: If a version already exists, an error is raised (this is generally the default behavior)
     ERROR_IF_EXISTS = 'errorifexists'
 

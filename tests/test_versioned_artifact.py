@@ -13,7 +13,8 @@ class MockArtifact(Artifact):
     @classmethod
     def _read_bytes(cls, file_, **kwargs):
         data = file_.read().decode()
-        return cls(data=data)
+        metadata = {}
+        return data, metadata
 
     def write_bytes(self, file_, **kwargs):
         file_.write(str.encode(self.data))
@@ -34,14 +35,6 @@ def versioned_artifact(tmp_path):
         version_name_class=SimpleVersionName,
     )
     return versioned_artifact
-
-
-# pond.write(artifact, artifact_name)
-# - use artifact_name to look for a versioned artifact in a given datastore and location
-#   - if it doesn't exist, create it; use the artifact.class to create a versioned artifact of
-#   that kind
-#   - if it does exist, check that the artifact class corresponds to the versioned artifact
-#   metadata
 
 # test: all_version_names vs version_names
 # test: delete version
@@ -125,3 +118,16 @@ def test_write_incompatible_version_name_class(versioned_artifact):
             manifest=Manifest(),
             version_name=DateTimeVersionName(),
         )
+
+
+def test_read_manifest(versioned_artifact):
+    datastore = versioned_artifact.datastore
+
+    # Create a version
+    data = 'test_data'
+    metadata = {'test': 'xyz'}
+    manifest = Manifest.from_nested_dict({'user': metadata})
+    version = versioned_artifact.write(data=data, manifest=manifest)
+
+    manifest = versioned_artifact.read_manifest(version_name='v1')
+    assert manifest.collect() == version.manifest.collect()

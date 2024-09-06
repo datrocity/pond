@@ -18,7 +18,7 @@ class PILImageArtifact(Artifact):
         # todo "copy" is because opening the file is lazy; is there a better way?
         image = Image.open(file_).copy()
         metadata = image.info
-        return cls(image, metadata)
+        return image, metadata
 
     @staticmethod
     def filename(basename):
