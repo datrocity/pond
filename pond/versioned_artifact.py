@@ -137,6 +137,40 @@ class VersionedArtifact:
 
         return version
 
+    def read_manifest(self, version_name):
+        """ Read the manifest of a version of the artifact.
+
+        Parameters
+        ----------
+        version_name: Union[str, VersionName], optional
+            Version name, given as a string (more common) or as VersionName instance. If None,
+            the latest version name for the given artifact is used.
+
+        Raises
+        ------
+        VersionDoesNotExist
+            If the requested version does not exist.
+
+        Returns
+        -------
+        manifest: Manifest
+            The manifest of the version.
+        """
+
+        if version_name is not None:
+            if isinstance(version_name, str):
+                version_name = self.version_name_class.from_string(version_name)
+        else:
+            version_name = self.latest_version_name()
+
+        version = Version.read_manifest(
+            version_name=version_name,
+            datastore=self.datastore,
+            location=self.versions_location,
+        )
+
+        return version
+
     def write(self,
               data: DataType,
               manifest: Manifest,
