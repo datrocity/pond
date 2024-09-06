@@ -85,6 +85,7 @@ class Activity:
         See Also
         --------
         `read_artifact` -- Read an Artifact object, including artifact data and metadata
+        `read_manifest` -- Read a version manifest, given its name and version name
         `read` -- Read the data in an artifact
         """
         versioned_artifact = VersionedArtifact.from_datastore(
@@ -96,6 +97,40 @@ class Activity:
         version_id = version.get_uri(self.location, self.datastore)
         self.read_history.add(version_id)
         return version
+
+    def read_manifest(self,
+                     name: str,
+                     version_name: Optional[Union[str, VersionName]] = None) -> Manifest:
+        """ Read a version manifest, given its name and version name.
+
+        If no version name is specified, the latest version is read.
+
+        Parameters
+        ----------
+        name: str
+            Artifact name
+        version_name: str or VersionName
+            Version name, given as a string (more common) or as VersionName instance. If None,
+            the latest version name for the given artifact is used.
+
+        Return
+        ------
+        manifest: Manifest
+            The loaded Manifest object.
+
+        See Also
+        --------
+        `read_version` -- Read a Version object, including the artifact object and version manifest
+        `read_artifact` -- Read an Artifact object, including artifact data and metadata
+        `read` -- Read the data in an artifact
+        """
+        versioned_artifact = VersionedArtifact.from_datastore(
+            artifact_name=name,
+            location=self.location,
+            datastore=self.datastore,
+        )
+        manifest = versioned_artifact.read_manifest(version_name)
+        return manifest
 
     def read_artifact(self,
                       name: str,
@@ -120,6 +155,7 @@ class Activity:
         See Also
         --------
         `read` -- Read the data in an artifact
+        `read_manifest` -- Read a version manifest, given its name and version name
         `read_version` -- Read a Version object, including the artifact object and version manifest
         """
         version = self.read_version(name, version_name)
@@ -148,6 +184,7 @@ class Activity:
         See Also
         --------
         `read_artifact` -- Read an Artifact object, including artifact data and metadata
+        `read_manifest` -- Read a version manifest, given its name and version name
         `read_version` -- Read a Version object, including the artifact object and version manifest
         """
         artifact = self.read_artifact(name, version_name)

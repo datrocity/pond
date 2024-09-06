@@ -1,6 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Type
 
+import joblib
+
+from pond.metadata.dict import DictMetadataSource
+
 
 class Artifact(ABC):
     """ Knows how to read and write one type of artifact.
@@ -32,7 +36,7 @@ class Artifact(ABC):
 
     # --- Artifact public interface
 
-    def __init__(self, data, metadata=None):
+    def __init__(self, data, metadata=None, data_hash=None):
         """ Create an Artifact.
 
         Parameters
@@ -42,40 +46,24 @@ class Artifact(ABC):
         metadata: dict
             User-defined metadata, saved with the artifact (optional).
             The metadata keys and values will be stored as strings.
+        data_hash: str
+            The data hash of the data, if known (for example, when the artifact
+            is read from a Version). If None, the hash is re-computed.
         """
+
         self.data = data
+
+        if data_hash is None:
+            data_hash = self._data_hash()
+        self.data_hash = data_hash
+
         if metadata is None:
             metadata = {}
         self.metadata = metadata
 
-    @classmethod
-    def read(cls, path, metadata=None, **kwargs):
-        """ Reads the artifact from a file, given the path.
-
-        Parameters
-        ----------
-        path: str
-            Filename from which the artifact is read.
-        metadata: dict or None
-            The metadata for the artifact. If defined, it takes the place of any metadata
-            defined in the artifact itself.
-            Typically, this external artifact metadata comes from an artifact manifest. If the
-            artifact has been written as a `pond` `VersionedArtifact`, then the two sources of
-            metadata are identical.
-        kwargs: dict
-            Additional parameters for the reader.
-
-        Returns
-        -------
-        artifact: Artifact
-            An instance of the artifact.
-        """
-        with open(path, 'rb') as f:
-            artifact = cls.read_bytes(f, metadata, **kwargs)
-        return artifact
 
     @classmethod
-    def read_bytes(cls, file_, metadata=None, **kwargs):
+    def read_bytes(cls, file_, metadata=None, data_hash=None, **kwargs):
         """ Reads the artifact from a binary file.
 
         Parameters
@@ -88,6 +76,9 @@ class Artifact(ABC):
             Typically, this external artifact metadata comes from an artifact manifest. If the
             artifact has been written as a `pond` `VersionedArtifact`, then the two sources of
             metadata are identical.
+        data_hash: str
+            The data hash of the data, if known (for example, when the artifact
+            is read from a Version). If None, the hash is re-computed.
         kwargs: dict
             Parameters for the reader.
 
@@ -96,10 +87,11 @@ class Artifact(ABC):
         artifact: Artifact
             An instance of the artifact.
         """
-        artifact = cls._read_bytes(file_, **kwargs)
-        if metadata is not None:
-            artifact.metadata = metadata
-        return artifact
+        data, read_metadata = cls._read_bytes(file_, **kwargs)
+        if metadata is None:
+            metadata = read_metadata
+
+        return cls(data, metadata=metadata, data_hash=data_hash)
 
     # todo why the kwargs
     def write(self, path, **kwargs):
@@ -148,13 +140,19 @@ class Artifact(ABC):
         ----------
         file_: file-like object
             A file-like object from which the artifact is read, opened in binary mode.
+        data_hash: str
+            The data hash of the data, if known (for example, when the artifact
+            is read from a Version). If None, the hash is re-computed.
         kwargs: dict
             Parameters for the reader.
 
         Returns
         -------
-        artifact: Artifact
-            An instance of the artifact.
+        data: any
+            The data of the artifact.
+        metadata: dict
+            User-defined metadata, saved with the artifact (optional).
+            The metadata keys and values will be stored as strings.
         """
         pass
 
@@ -177,6 +175,9 @@ class Artifact(ABC):
         """
         pass
 
+    def _data_hash(self):
+        return joblib.hash(self.data)
+
     def get_artifact_metadata(self):
         """
         This is not the user metadata!
@@ -185,4 +186,8 @@ class Artifact(ABC):
         -------
 
         """
-        return None
+        artifact_metadata = {
+            'data_hash': self.data_hash,
+        }
+        artifact_metadata_source = DictMetadataSource(name='artifact', metadata=artifact_metadata)
+        return artifact_metadata_source

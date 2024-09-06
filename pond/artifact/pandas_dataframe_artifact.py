@@ -26,7 +26,7 @@ class PandasDataFrameArtifact(Artifact):
         # We want to read the index from the first column by default, but it can be overwritten
         kwargs.setdefault('index_col', 0)
         data = pd.read_csv(file_, comment='#', **kwargs)
-        return cls(data, metadata)
+        return data, metadata
 
     def write_bytes(self, file_, **kwargs):
         for key, value in self.metadata.items():

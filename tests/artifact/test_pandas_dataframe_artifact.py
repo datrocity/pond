@@ -56,3 +56,39 @@ def test_read_bytes(tmp_path, pandas_df, metadata):
 
     pd.testing.assert_frame_equal(artifact.data, original.data)
     assert artifact.metadata == {k: str(v) for k, v in original.metadata.items()}
+
+
+def test_data_hash():
+    data1 = pd.DataFrame(
+        data=[
+            [1.2, 3, "a", True],
+            [-0.1, 2, "b", False],
+            [np.nan, np.nan, np.nan, np.nan],
+        ],
+        index=pd.Index(['I0', 'I1', 'I2'], name='foo_index'),
+        columns=['C0', 'C1', 'C2', 'C3'],
+    )
+    artifact1 = PandasDataFrameArtifact(data1)
+
+    data2 = pd.DataFrame(
+        data=[
+            [1.2, 3, "a", True],
+            [-0.1, 2, "b", False],
+            [np.nan, np.nan, np.nan, np.nan],
+        ],
+        index=pd.Index(['I0', 'I1', 'I2'], name='foo_index'),
+        columns=['C0', 'C1', 'C2', 'C3'],
+    )
+    artifact2 = PandasDataFrameArtifact(data2)
+
+    data3 = pd.DataFrame(
+        data=[
+            [1.2, 3, "a", True],
+        ],
+        index=pd.Index(['I0'], name='foo_index'),
+        columns=['C0', 'C1', 'C2', 'C3'],
+    )
+    artifact3 = PandasDataFrameArtifact(data3)
+
+    assert artifact1.data_hash == artifact2.data_hash
+    assert artifact1.data_hash != artifact3.data_hash

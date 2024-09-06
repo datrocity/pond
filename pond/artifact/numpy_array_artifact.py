@@ -17,7 +17,7 @@ class NumpyArrayArtifact(Artifact):
         content = np.load(file_, allow_pickle=True)
         data = content['data']
         metadata = content['metadata'][()]
-        return cls(data, metadata=metadata)
+        return data, metadata
 
     def write_bytes(self, file_):
         # The pond convention is that all stored metadata is a string

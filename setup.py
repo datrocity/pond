@@ -19,9 +19,7 @@ def get_requirements(filename):
 
 # extra requirements
 extras_require = {
-    'pandas': get_requirements('requirements-pandas.txt'),
-    'dask': get_requirements('requirements-dask.txt'),
-    'spark': get_requirements('requirements-spark.txt')
+    'dev': get_requirements('requirements-dev.txt'),
 }
 extras_require['all'] = set(sum(extras_require.values(), []))
 
@@ -31,7 +29,7 @@ with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = '\n' + f.read()
 
 setup_conf = dict(name='pond',
-                  version='0.1.0',
+                  version='0.2.0',
                   description='A library to keep scientists from losing their minds: storage, '
                               'versioning, and lineage of artifacts',
                   long_description=long_description,

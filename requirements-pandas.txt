@@ -1,2 +1,3 @@
 numpy<2.0  # NumPy 2.0 broke binary compatibility, Pandas doesn't know yet
 pandas==2.*
+joblib==1.4.*

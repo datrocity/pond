@@ -137,6 +137,40 @@ class VersionedArtifact:
 
         return version
 
+    def read_manifest(self, version_name):
+        """ Read the manifest of a version of the artifact.
+
+        Parameters
+        ----------
+        version_name: Union[str, VersionName], optional
+            Version name, given as a string (more common) or as VersionName instance. If None,
+            the latest version name for the given artifact is used.
+
+        Raises
+        ------
+        VersionDoesNotExist
+            If the requested version does not exist.
+
+        Returns
+        -------
+        manifest: Manifest
+            The manifest of the version.
+        """
+
+        if version_name is not None:
+            if isinstance(version_name, str):
+                version_name = self.version_name_class.from_string(version_name)
+        else:
+            version_name = self.latest_version_name()
+
+        version = Version.read_manifest(
+            version_name=version_name,
+            datastore=self.datastore,
+            location=self.versions_location,
+        )
+
+        return version
+
     def write(self,
               data: DataType,
               manifest: Manifest,
@@ -171,12 +205,11 @@ class VersionedArtifact:
         """
         # todo lock
 
-        if version_name is None:
-            prev_version_name = self.latest_version_name(raise_if_none=False)
-            version_name = self.version_name_class.next(prev_version_name)
+        user_metadata = manifest.collect_section('user', default_metadata={})
+        artifact = self.artifact_class(data, metadata=user_metadata)
 
-        if isinstance(version_name, str):
-            version_name = VersionName.from_string(version_name)
+        data_hash = artifact.data_hash
+        version_name = self._resolve_write_version_name(version_name, write_mode, data_hash)
 
         if not isinstance(version_name, self.version_name_class):
             raise IncompatibleVersionName(
@@ -184,15 +217,13 @@ class VersionedArtifact:
                 version_name_class=self.version_name_class,
             )
 
-        user_metadata = manifest.collect_section('user', default_metadata={})
-        artifact = self.artifact_class(data, metadata=user_metadata)
         version = Version(self.artifact_name, version_name, artifact)
 
         if version.exists(self.versions_location, self.datastore):
             if write_mode == WriteMode.ERROR_IF_EXISTS:
                 uri = version.get_uri(self.location, self.datastore)
                 raise VersionAlreadyExists(uri)
-            elif write_mode == WriteMode.OVERWRITE:
+            else:
                 uri = version.get_uri(self.location, self.datastore)
                 logger.info(f"Deleting existing version before overwriting: {uri}")
                 version_location_ = version_location(self.versions_location, version_name)
@@ -341,3 +372,39 @@ class VersionedArtifact:
 
     def _read_manifest(self):
         return self.datastore.read_yaml(self.versions_manifest_location)
+
+    def _resolve_write_version_name(self, version_name, write_mode, data_hash):
+        if isinstance(version_name, str):
+            version_name = VersionName.from_string(version_name)
+
+        # Resolve previous version
+        prev_version_name = self.latest_version_name(raise_if_none=False)
+
+        # Determine the next version name
+        if version_name is None:
+            if prev_version_name is None:
+                # This is the first version
+                version_name = self.version_name_class.next(prev_version_name)
+            else:
+                # This is not the first version
+                if write_mode == WriteMode.OVERWRITE:
+                    version_name = prev_version_name
+
+                elif write_mode == WriteMode.WRITE_ON_CHANGE:
+                    prev_manifest = self.read_manifest(prev_version_name)
+                    prev_data_hash = prev_manifest.collect_section('artifact')['data_hash']
+                    if prev_data_hash == data_hash:
+                        # overwrite
+                        version_name = prev_version_name
+                    else:
+                        version_name = self.version_name_class.next(prev_version_name)
+
+                else:
+                    version_name = self.version_name_class.next(prev_version_name)
+
+        elif write_mode == WriteMode.WRITE_ON_CHANGE and prev_version_name != version_name:
+            raise RuntimeError(
+                f'Can only `WRITE_ON_CHANGE` only on the latest version of an artifact.'
+            )
+
+        return version_name

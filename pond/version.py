@@ -62,24 +62,21 @@ class Version:
         # save stored manifest
         self.manifest = manifest
 
-    # todo store and recover artifact_class from manifest
+    # todo: store and recover artifact_class from manifest
     @classmethod
     def read(cls, version_name, artifact_class, location, datastore):
-        #: location of the version folder
-        version_location_ = version_location(location, version_name)
-        #: location of the manifest file
-        manifest_location = version_manifest_location(version_location_)
+        manifest = cls.read_manifest(version_name, location, datastore)
 
-        if not datastore.exists(manifest_location):
-            raise VersionDoesNotExist(location, str(version_name))
-        manifest = Manifest.from_yaml(manifest_location, datastore)
+        # Location of the version folder
+        version_location_ = version_location(location, version_name)
 
         version_metadata = manifest.collect_section('version')
         data_filename = version_metadata['filename']
         data_location = version_data_location(version_location_, data_filename)
         user_metadata = manifest.collect_section('user')
+        data_hash = manifest.collect_section('artifact').get('data_hash', None)
         with datastore.open(data_location, 'rb') as f:
-            artifact = artifact_class.read_bytes(f, metadata=user_metadata)
+            artifact = artifact_class.read_bytes(f, metadata=user_metadata, data_hash=data_hash)
 
         version = cls(
             artifact_name=version_metadata['artifact_name'],
@@ -89,6 +86,18 @@ class Version:
         )
 
         return version
+
+    @classmethod
+    def read_manifest(cls, version_name, location, datastore):
+        """ Read the version manifest. """
+        # Location of the version folder
+        version_location_ = version_location(location, version_name)
+        # Location of the manifest file
+        manifest_location = version_manifest_location(version_location_)
+        if not datastore.exists(manifest_location):
+            raise VersionDoesNotExist(location, str(version_name))
+        manifest = Manifest.from_yaml(manifest_location, datastore)
+        return manifest
 
     def get_uri(self, location, datastore):
         """ Build URI for a specific location and datastore. """
