@@ -1,5 +1,8 @@
+from unittest.mock import ANY, Mock
+
 import pytest
 
+import pond.versioned_artifact
 from pond import Activity
 from pond.artifact import Artifact
 from pond.artifact.artifact_registry import ArtifactRegistry
@@ -319,3 +322,31 @@ def test_write_mode_write_on_change_cant_write_old_version(activity):
             write_mode=WriteMode.WRITE_ON_CHANGE,
             version_name='v1'
         )
+
+
+def test_global_write_mode_overwrite(monkeypatch, tmp_path):
+    datastore = FileDatastore(id='foostore', base_path=tmp_path)
+    global_mode = WriteMode.WRITE_ON_CHANGE
+    activity = Activity(
+        source='test_pond.py',
+        datastore=datastore,
+        location='test_location',
+        write_mode=global_mode,
+    )
+
+    write_mock = Mock()
+    monkeypatch.setattr(pond.versioned_artifact.VersionedArtifact, "write", write_mock)
+
+    # 1. If we don't specify a write mode in activity.write, the global one is used
+    activity.write(data='123', name='meh', artifact_class=MockArtifact)
+    write_mock.assert_called_with(
+        write_mode=global_mode,
+        data='123', manifest=ANY, version_name=ANY,
+    )
+    # 2. If we specify a write mode in activity.write, that one is used
+    local_mode = WriteMode.OVERWRITE
+    activity.write(data='123', name='meh', write_mode=local_mode, artifact_class=MockArtifact)
+    write_mock.assert_called_with(
+        write_mode=local_mode,
+        data='123', manifest=ANY, version_name=ANY,
+    )

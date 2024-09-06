@@ -20,9 +20,11 @@ class Activity:
                  source: str,
                  location: str,
                  datastore: Datastore,
-                 author: str='NA',
+                 write_mode: WriteMode = WriteMode.ERROR_IF_EXISTS,
+                 author: str = 'NA',
                  version_name_class: Type[VersionName] = SimpleVersionName,
-                 artifact_registry: ArtifactRegistry = global_artifact_registry):
+                 artifact_registry: ArtifactRegistry = global_artifact_registry,
+                 ):
         """ Read and write artifacts with lineage and metadata.
 
         Activity is the main user-facing interface for pond. Most of the usages of `pond` only
@@ -39,6 +41,10 @@ class Activity:
             a project or experiment.
         datastore: Datastore
             Data store object, representing the storage where the artifacts are read/written.
+        write_mode: WriteMode
+            Default write mode for this `Activity` instance. The default mode will be used
+            unless one is specified during a write operation. See `pond.conventions.WriteMode` for
+            possible values.
         author: str
             Author name/identifier, used as metadata. Default is 'NA'.
         version_name_class: VersionName
@@ -47,11 +53,12 @@ class Activity:
         artifact_registry: ArtifactRegistry
             Registry object mapping data types and file formats to an artifact class able to
             read/write them. The artifact classes distributed with `pond` register automatically
-            to the default value,  `global_artifact_registry`.
+            to the default value, `global_artifact_registry`.
         """
         self.source = source
         self.location = location
         self.datastore = datastore
+        self.write_mode = write_mode
         self.author = author
         self.version_name_class = version_name_class
         self.artifact_registry = artifact_registry
@@ -194,18 +201,54 @@ class Activity:
     def write(self,
               data: DataType,
               name: str,
-              artifact_class: Optional[Type[Artifact]] = None,
               format: Optional[str] = None,
               version_name: Optional[Union[str, VersionName]] = None,
               metadata: Optional[Dict[str, str]] = None,
-              write_mode: WriteMode = WriteMode.ERROR_IF_EXISTS) -> Version:
-        # todo: write mode
+              write_mode: Optional[WriteMode] = None,
+              artifact_class: Optional[Type[Artifact]] = None) -> Version:
+        """ Write data as a versioned artifact.
+
+        Parameters
+        ----------
+        data: DataType
+            The artifact data to write.
+        name: str
+            Name of the artifact.
+        version_name: Union[str, VersionName], optional
+            Version name, given as a string (more common) or as VersionName instance. If None,
+            the next available version name for the given artifact is used.
+        metadata: Dict[str, str], optional
+            User-defined metadata, saved with the artifact.
+            The metadata keys and values are stored as strings.
+        write_mode: WriteMode
+            Write mode. If None, the global write mode is used (see `Activity.write_mode`). See
+            `pond.conventions.WriteMode` for possible values.
+        artifact_class: Type[Artifact], optional
+            A subclass of `Artifact` to be used to store the data. If None, Activity looks for
+            a subclass that knows how to handle the `data` (this is the typical case)
+
+        Raises
+        ------
+        IncompatibleVersionName
+            If the provided version name does not correspond to the version name class used in
+            this versioned artifact.
+        VersionAlreadyExists
+            If the provided version name exists, and the write mode is "ERROR_IF_EXISTS".
+
+        Returns
+        -------
+        Version
+            The version object read from storage.
+        """
 
         if artifact_class is None:
             artifact_class = self.artifact_registry.get_artifact(
                 data_class=data.__class__,
                 format=format,
             )
+
+        if write_mode is None:
+            write_mode = self.write_mode
 
         versioned_artifact = VersionedArtifact(
             artifact_name=name,

@@ -35,7 +35,7 @@ lint: setup ## run the static type checker and the linter
 test: ONLY?=*
 test: setup ## run the unit tests
 	@. $(VENV_ACTIVATE) && \
-	pytest $(TESTS_PATH)/test_*$(ONLY)*.py
+	pytest $(TESTS_PATH) -v
 
 .PHONY: watch
 watch: ONLY?=*
