@@ -217,3 +217,105 @@ def test_write_mode_overwrite(activity):
     # v1 has got new data
     artifact = activity.read_artifact(name='meh', version_name='v1')
     assert artifact.data == '234'
+
+    # The latest version is still v1
+    version = activity.read_version('meh')
+    assert str(version.version_name) == 'v1'
+
+
+def test_write_mode_overwrite_latest(activity):
+    activity.write('123', name='meh', artifact_class=MockArtifact)
+
+    # No exception is raised when overwriting v1
+    activity.write(
+        data='234',
+        name='meh',
+        artifact_class=MockArtifact,
+        write_mode=WriteMode.OVERWRITE,
+        # no version name specified
+    )
+    # v1 has got new data
+    artifact = activity.read_artifact(name='meh')
+    assert artifact.data == '234'
+
+    # The latest version is still v1
+    version = activity.read_version('meh')
+    assert str(version.version_name) == 'v1'
+
+
+def test_write_mode_write_on_change(activity):
+    activity.write(
+        data='123',
+        name='meh',
+        artifact_class=MockArtifact,
+        write_mode=WriteMode.WRITE_ON_CHANGE,
+    )
+    first_v1_version = activity.read_version('meh')
+    first_v1_datetime = first_v1_version.manifest.collect_section('version')['date_time']
+    activity_metadata = first_v1_version.manifest.collect()
+    print(activity_metadata)
+
+    # Write-on-change, same data: we expect the version number to stay the latest,
+    # and the metadata to be updated (as the version is overwritten)
+    activity.write(
+        data='123',
+        name='meh',
+        artifact_class=MockArtifact,
+        write_mode=WriteMode.WRITE_ON_CHANGE,
+    )
+    # The latest version is still v1
+    second_v1_version = activity.read_version('meh')
+    assert str(second_v1_version.version_name) == 'v1'
+
+    # The version has been overwritten, and so the metadata changed
+    second_v1_datetime = second_v1_version.manifest.collect_section('version')['date_time']
+    assert second_v1_datetime != first_v1_datetime
+    # And the data, of course, is still the same
+    assert second_v1_version.artifact.data == '123'
+
+    # Write-on-change, new data
+    activity.write(
+        data='234',
+        name='meh',
+        artifact_class=MockArtifact,
+        write_mode=WriteMode.WRITE_ON_CHANGE,
+    )
+    # The latest version is now v2
+    second_v1_version = activity.read_version('meh')
+    assert str(second_v1_version.version_name) == 'v2'
+    assert second_v1_version.artifact.data == '234'
+
+
+def test_write_mode_write_on_change_cant_write_old_version(activity):
+    activity.write(
+        data='123',
+        name='meh',
+        artifact_class=MockArtifact,
+        write_mode=WriteMode.WRITE_ON_CHANGE,
+    )
+
+    activity.write(
+        data='234',
+        name='meh',
+        artifact_class=MockArtifact,
+        write_mode=WriteMode.WRITE_ON_CHANGE,
+    )
+
+    # This works, it refers to the latest version
+    activity.write(
+        data='123',
+        name='meh',
+        artifact_class=MockArtifact,
+        write_mode=WriteMode.WRITE_ON_CHANGE,
+        version_name='v2'
+    )
+
+    # This does not work, it refers to the previous version
+    with pytest.raises(RuntimeError):
+        activity.write(
+            data='123',
+            name='meh',
+            artifact_class=MockArtifact,
+            write_mode=WriteMode.WRITE_ON_CHANGE,
+            version_name='v1'
+        )
