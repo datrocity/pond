@@ -19,7 +19,7 @@ class DictArtifact(Artifact):
         txt = file_.read().decode()
         data = json.loads(txt)
         metadata = data.pop('__metadata__', dict())
-        return cls(data, metadata)
+        return data, metadata
 
     def write_bytes(self, file_, **kwargs):
         dict_ = dict(self.data)

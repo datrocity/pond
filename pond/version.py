@@ -74,8 +74,9 @@ class Version:
         data_filename = version_metadata['filename']
         data_location = version_data_location(version_location_, data_filename)
         user_metadata = manifest.collect_section('user')
+        data_hash = manifest.collect_section('artifact')['data_hash']
         with datastore.open(data_location, 'rb') as f:
-            artifact = artifact_class.read_bytes(f, metadata=user_metadata)
+            artifact = artifact_class.read_bytes(f, metadata=user_metadata, data_hash=data_hash)
 
         version = cls(
             artifact_name=version_metadata['artifact_name'],

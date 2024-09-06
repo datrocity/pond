@@ -13,7 +13,8 @@ class MockArtifact(Artifact):
     @classmethod
     def _read_bytes(cls, file_, **kwargs):
         data = file_.read().decode()
-        return cls(data=data)
+        metadata = {}
+        return data, metadata
 
     def write_bytes(self, file_, **kwargs):
         file_.write(str.encode(self.data))

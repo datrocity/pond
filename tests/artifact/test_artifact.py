@@ -3,11 +3,18 @@ from pond.artifact import Artifact
 
 class MockArtifact(Artifact):
     @classmethod
-    def _read_bytes(cls, file_, **kwargs):
-        artifact = MockArtifact(data=[], metadata={})
+    def read_bytes(cls, file_, metadata=None, data_hash=None, **kwargs):
+        artifact = super().read_bytes(file_, metadata, data_hash)
+        #artifact = MockArtifact(data=[], metadata={})
         artifact.filename = file_.name
         artifact.read_kwargs = kwargs
         return artifact
+
+    @classmethod
+    def _read_bytes(cls, file_, **kwargs):
+        data = file_.read().decode()
+        metadata = {}
+        return data, metadata
 
     def write_bytes(self, file_, **kwargs):
         self.filename = file_.name
@@ -43,6 +50,16 @@ def test_read_bytes_with_external_metadata(tmp_path):
     # check that read_bytes has been called with the right arguments
     assert artifact.filename == path
     assert artifact.metadata == external_metadata
+
+
+def test_read_bytes_with_data_hash(tmp_path):
+    path = str(tmp_path / "filename.ext")
+    with open(path, 'wb') as f:
+        f.write(b'abc')
+
+    with open(path, 'rb') as f:
+        artifact = MockArtifact.read_bytes(f, data_hash='blah')
+    assert artifact.data_hash == 'blah'
 
 
 def test_write(tmp_path):
