@@ -137,3 +137,39 @@ def test_read_not_existing(tmp_path):
             location=location,
             datastore=store,
         )
+
+
+def test_read_manifest(tmp_path):
+    # Write a version, so that we can read its manifest later
+    data = pd.DataFrame([[1, 2]], columns=['c1', 'c2'])
+    user_metadata = {'a': 'b', 'c': 11}
+    artifact_name = 'meh'
+    version = Version(
+        artifact_name=artifact_name,
+        version_name=SimpleVersionName(version_number=42),
+        artifact=PandasDataFrameArtifact(data=data),
+    )
+    store = FileDatastore(id='foostore', base_path=str(tmp_path))
+    user_manifest = Manifest.from_nested_dict({'user': user_metadata})
+    version.write(location='abc', datastore=store, manifest=user_manifest)
+    saved_manifest = version.manifest.collect()
+
+    manifest = Version.read_manifest(
+        version_name=SimpleVersionName(version_number=42),
+        location='abc',
+        datastore=store,
+    )
+    reloaded_manifest = manifest.collect()
+
+    assert reloaded_manifest == saved_manifest
+
+
+def test_read_manifest_not_existing(tmp_path):
+    store = FileDatastore(id='foostore', base_path=str(tmp_path))
+    location = 'abc'
+    with pytest.raises(VersionDoesNotExist):
+        Version.read_manifest(
+            version_name='v1',
+            location=location,
+            datastore=store,
+        )

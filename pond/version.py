@@ -62,17 +62,13 @@ class Version:
         # save stored manifest
         self.manifest = manifest
 
-    # todo store and recover artifact_class from manifest
+    # todo: store and recover artifact_class from manifest
     @classmethod
     def read(cls, version_name, artifact_class, location, datastore):
-        #: location of the version folder
-        version_location_ = version_location(location, version_name)
-        #: location of the manifest file
-        manifest_location = version_manifest_location(version_location_)
+        manifest = cls.read_manifest(version_name, location, datastore)
 
-        if not datastore.exists(manifest_location):
-            raise VersionDoesNotExist(location, str(version_name))
-        manifest = Manifest.from_yaml(manifest_location, datastore)
+        # Location of the version folder
+        version_location_ = version_location(location, version_name)
 
         version_metadata = manifest.collect_section('version')
         data_filename = version_metadata['filename']
@@ -89,6 +85,18 @@ class Version:
         )
 
         return version
+
+    @classmethod
+    def read_manifest(cls, version_name, location, datastore):
+        """ Read the version manifest. """
+        # Location of the version folder
+        version_location_ = version_location(location, version_name)
+        # Location of the manifest file
+        manifest_location = version_manifest_location(version_location_)
+        if not datastore.exists(manifest_location):
+            raise VersionDoesNotExist(location, str(version_name))
+        manifest = Manifest.from_yaml(manifest_location, datastore)
+        return manifest
 
     def get_uri(self, location, datastore):
         """ Build URI for a specific location and datastore. """
