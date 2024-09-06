@@ -201,11 +201,11 @@ class Activity:
     def write(self,
               data: DataType,
               name: str,
-              format: Optional[str] = None,
               version_name: Optional[Union[str, VersionName]] = None,
               metadata: Optional[Dict[str, str]] = None,
               write_mode: Optional[WriteMode] = None,
-              artifact_class: Optional[Type[Artifact]] = None) -> Version:
+              artifact_class: Optional[Type[Artifact]] = None,
+              format: Optional[str] = None) -> Version:
         """ Write data as a versioned artifact.
 
         Parameters
@@ -214,6 +214,7 @@ class Activity:
             The artifact data to write.
         name: str
             Name of the artifact.
+        format:
         version_name: Union[str, VersionName], optional
             Version name, given as a string (more common) or as VersionName instance. If None,
             the next available version name for the given artifact is used.
@@ -226,6 +227,8 @@ class Activity:
         artifact_class: Type[Artifact], optional
             A subclass of `Artifact` to be used to store the data. If None, Activity looks for
             a subclass that knows how to handle the `data` (this is the typical case)
+        format: str, optional
+            Look for an artifact that can handle this file format.
 
         Raises
         ------
