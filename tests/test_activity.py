@@ -350,3 +350,38 @@ def test_global_write_mode_overwrite(monkeypatch, tmp_path):
         write_mode=local_mode,
         data='123', manifest=ANY, version_name=ANY,
     )
+
+
+def test_location_can_be_overwritten(tmp_path):
+    datastore = FileDatastore(id='foostore', base_path=tmp_path)
+    global_mode = WriteMode.WRITE_ON_CHANGE
+    activity = Activity(
+        source='test_pond.py',
+        datastore=datastore,
+        location='test_location',
+        write_mode=global_mode,
+    )
+
+    # We write an artifact to the default location
+    activity.write(data='123', name='meh', artifact_class=MockArtifact)
+    # We write another artifact with the same data to another location
+    activity.write(data='234', name='meh', artifact_class=MockArtifact, location='other_location')
+
+    # We read the artfact from the default location, first implicitly
+    data = activity.read('meh')
+    assert data == '123'
+    manifest = activity.read_manifest('meh')
+    assert (manifest.collect_section('version')['uri'] ==
+            'pond://foostore/test_location/meh/meh/v1')
+    # Next, explicitly
+    data = activity.read('meh', location='test_location')
+    assert data == '123'
+    manifest = activity.read_manifest('meh', location='test_location')
+    assert (manifest.collect_section('version')['uri'] ==
+            'pond://foostore/test_location/meh/meh/v1')
+    # Finally, we read the artifact from the alternative location
+    data = activity.read('meh', location='other_location')
+    assert data == '234'
+    manifest = activity.read_manifest('meh', location='other_location')
+    assert (manifest.collect_section('version')['uri'] ==
+            'pond://foostore/other_location/meh/meh/v1')

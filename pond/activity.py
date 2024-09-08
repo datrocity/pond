@@ -71,7 +71,8 @@ class Activity:
 
     def read_version(self,
                      name: str,
-                     version_name: Optional[Union[str, VersionName]] = None) -> Version:
+                     version_name: Optional[Union[str, VersionName]] = None,
+                     location: Optional[str] = None) -> Version:
         """ Read a version, given its name and version name.
 
         If no version name is specified, the latest version is read.
@@ -83,6 +84,9 @@ class Activity:
         version_name: str or VersionName
             Version name, given as a string (more common) or as VersionName instance. If None,
             the latest version name for the given artifact is used.
+        location: str, optional
+            Location in the data store where artifacts are read. If None, the default location
+            specified in the constructor is used.
 
         Return
         ------
@@ -95,9 +99,13 @@ class Activity:
         `read_manifest` -- Read a version manifest, given its name and version name
         `read` -- Read the data in an artifact
         """
+
+        if location is None:
+            location = self.location
+
         versioned_artifact = VersionedArtifact.from_datastore(
             artifact_name=name,
-            location=self.location,
+            location=location,
             datastore=self.datastore,
         )
         version = versioned_artifact.read(version_name=version_name)
@@ -107,7 +115,8 @@ class Activity:
 
     def read_manifest(self,
                      name: str,
-                     version_name: Optional[Union[str, VersionName]] = None) -> Manifest:
+                     version_name: Optional[Union[str, VersionName]] = None,
+                     location: Optional[str] = None) -> Manifest:
         """ Read a version manifest, given its name and version name.
 
         If no version name is specified, the latest version is read.
@@ -119,6 +128,9 @@ class Activity:
         version_name: str or VersionName
             Version name, given as a string (more common) or as VersionName instance. If None,
             the latest version name for the given artifact is used.
+        location: str, optional
+            Location in the data store where artifacts are read. If None, the default location
+            specified in the constructor is used.
 
         Return
         ------
@@ -131,9 +143,13 @@ class Activity:
         `read_artifact` -- Read an Artifact object, including artifact data and metadata
         `read` -- Read the data in an artifact
         """
+
+        if location is None:
+            location = self.location
+
         versioned_artifact = VersionedArtifact.from_datastore(
             artifact_name=name,
-            location=self.location,
+            location=location,
             datastore=self.datastore,
         )
         manifest = versioned_artifact.read_manifest(version_name)
@@ -141,7 +157,8 @@ class Activity:
 
     def read_artifact(self,
                       name: str,
-                      version_name: Optional[Union[str, VersionName]] = None) -> Any:
+                      version_name: Optional[Union[str, VersionName]] = None,
+                      location: Optional[str] = None) -> Any:
         """ Read an artifact given its name and version name.
 
         If no version name is specified, the latest version is read.
@@ -153,6 +170,9 @@ class Activity:
         version_name: str or VersionName
             Version name, given as a string (more common) or as VersionName instance. If None,
             the latest version name for the given artifact is used.
+        location: str, optional
+            Location in the data store where artifacts are read. If None, the default location
+            specified in the constructor is used.
 
         Return
         ------
@@ -165,12 +185,13 @@ class Activity:
         `read_manifest` -- Read a version manifest, given its name and version name
         `read_version` -- Read a Version object, including the artifact object and version manifest
         """
-        version = self.read_version(name, version_name)
+        version = self.read_version(name, version_name, location=location)
         return version.artifact
 
     def read(self,
              name: str,
-             version_name: Optional[Union[str, VersionName]] = None) -> Any:
+             version_name: Optional[Union[str, VersionName]] = None,
+             location: Optional[str] = None) -> Any:
         """ Read some data given its name and version name.
 
         If no version name is specified, the latest version is read.
@@ -182,6 +203,9 @@ class Activity:
         version_name: str or VersionName
             Version name, given as a string (more common) or as VersionName instance. If None,
             the latest version name for the given artifact is used.
+        location: str, optional
+            Location in the data store where artifacts are read. If None, the default location
+            specified in the constructor is used.
 
         Return
         ------
@@ -194,7 +218,8 @@ class Activity:
         `read_manifest` -- Read a version manifest, given its name and version name
         `read_version` -- Read a Version object, including the artifact object and version manifest
         """
-        artifact = self.read_artifact(name, version_name)
+
+        artifact = self.read_artifact(name, version_name, location=location)
         return artifact.data
 
     # TODO version name is a string vs is a VersionName instance
@@ -204,6 +229,7 @@ class Activity:
               version_name: Optional[Union[str, VersionName]] = None,
               metadata: Optional[Dict[str, str]] = None,
               write_mode: Optional[WriteMode] = None,
+              location: Optional[str] = None,
               artifact_class: Optional[Type[Artifact]] = None,
               format: Optional[str] = None) -> Version:
         """ Write data as a versioned artifact.
@@ -224,6 +250,9 @@ class Activity:
         write_mode: WriteMode
             Write mode. If None, the global write mode is used (see `Activity.write_mode`). See
             `pond.conventions.WriteMode` for possible values.
+        location: str, optional
+            Location in the data store where artifacts are written. If None, the default location
+            specified in the constructor is used.
         artifact_class: Type[Artifact], optional
             A subclass of `Artifact` to be used to store the data. If None, Activity looks for
             a subclass that knows how to handle the `data` (this is the typical case)
@@ -253,9 +282,12 @@ class Activity:
         if write_mode is None:
             write_mode = self.write_mode
 
+        if location is None:
+            location = self.location
+
         versioned_artifact = VersionedArtifact(
             artifact_name=name,
-            location=self.location,
+            location=location,
             datastore=self.datastore,
             artifact_class=artifact_class,
             version_name_class=self.version_name_class,
