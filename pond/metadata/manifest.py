@@ -1,4 +1,5 @@
 from pond.metadata.dict import DictMetadataSource
+from pond.metadata.metadata_source import transform_metadata_value
 
 
 class Manifest:
@@ -65,6 +66,6 @@ class Manifest:
     def collect(self):
         dict_ = {}
         for name, source in self._sections.items():
-            source_metadata = {k: str(v) for k, v in source.collect().items()}
+            source_metadata = {k: transform_metadata_value(v) for k, v in source.collect().items()}
             dict_[name] = source_metadata
         return dict_

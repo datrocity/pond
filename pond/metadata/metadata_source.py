@@ -1,6 +1,15 @@
 from abc import abstractmethod
 
 
+def transform_metadata_value(value):
+    """ Make sure that each value is either a list or a string. """
+    if isinstance(value, list):
+        transformed = [transform_metadata_value(el) for el in value]
+    else:
+        transformed = str(value)
+    return transformed
+
+
 class MetadataSource:
     """ Represents a source of metadata.
 
