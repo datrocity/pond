@@ -13,10 +13,6 @@ from pond.storage.file_datastore import FileDatastore
 from pond.version_name import SimpleVersionName
 
 
-# test: inputs are saved as metadata
-# test: pond.write without giving class explicitly
-
-
 class MockArtifact(Artifact):
     @classmethod
     def _read_bytes(cls, file_, **kwargs):
@@ -171,7 +167,7 @@ def test_activity_metadata():
     assert metadata_source.name == 'activity'
     metadata = metadata_source.collect()
     assert metadata['author'] == author
-    assert metadata['inputs'] == str(inputs)
+    assert metadata['inputs'] == inputs
     assert metadata['source'] == source
 
 
@@ -189,9 +185,7 @@ def test_write_inputs_to_metadata(activity):
 
     expected_inputs = ['pond://foostore/test_location/bah/v2',
                        'pond://foostore/test_location/meh/v1']
-    # TODO activity manifest should parse inputs list
-    #assert activity_metadata['inputs'] == expected_inputs
-    assert activity_metadata['inputs'] == str(expected_inputs)
+    assert activity_metadata['inputs'] == expected_inputs
 
 
 def test_write_mode_error_if_exists(activity):

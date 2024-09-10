@@ -8,8 +8,10 @@ from pond.storage.file_datastore import FileDatastore
 def nested_metadata():
     user_metadata = {'a': '2', 'b': 'c'}
     sys_metadata = {'foo': 'bar'}
+    version_metadata = {'inputs': ['input1', 'input2']}
     dict_ = {
         'user': user_metadata,
+        'version': version_metadata,
         'sys': sys_metadata,
     }
     return dict_
@@ -29,4 +31,3 @@ def test_to_form_yaml(tmp_path, nested_metadata):
 
     reloaded = Manifest.from_yaml(manifest_location, datastore)
     assert reloaded.collect() == nested_metadata
-

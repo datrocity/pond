@@ -6,5 +6,5 @@ def test_dict_metadata_source():
     source = DictMetadataSource(name='foo', metadata=metadata)
 
     assert source.section_name() == 'foo'
-    expected = {'a': '123', 'foo': '[1, 2, 3]'}
+    expected = {'a': '123', 'foo': ['1', '2', '3']}
     assert source.collect() == expected

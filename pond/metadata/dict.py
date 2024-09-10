@@ -1,6 +1,6 @@
 from typing import Any
 
-from pond.metadata.metadata_source import MetadataSource
+from pond.metadata.metadata_source import MetadataSource, transform_metadata_value
 
 
 class DictMetadataSource(MetadataSource):
@@ -13,7 +13,8 @@ class DictMetadataSource(MetadataSource):
         name: str
             The name of the section represented by this metadata source.
         metadata: dict[str, Any]
-            The dictionary of metadata. Values will be converted to string.
+            The dictionary of metadata. Values will be converted to string (or a list of strings
+            if the value is a list).
         """
         self.name = name
         self.metadata = metadata
@@ -22,4 +23,4 @@ class DictMetadataSource(MetadataSource):
         return self.name
 
     def collect(self) -> dict[str, str]:
-        return {k: str(v) for k,v in self.metadata.items()}
+        return {k: transform_metadata_value(v) for k,v in self.metadata.items()}

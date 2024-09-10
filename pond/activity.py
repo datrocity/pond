@@ -227,7 +227,7 @@ class Activity:
               data: DataType,
               name: str,
               version_name: Optional[Union[str, VersionName]] = None,
-              metadata: Optional[Dict[str, str]] = None,
+              metadata: Optional[Dict[str, Any]] = None,
               write_mode: Optional[WriteMode] = None,
               location: Optional[str] = None,
               artifact_class: Optional[Type[Artifact]] = None,
@@ -244,9 +244,9 @@ class Activity:
         version_name: Union[str, VersionName], optional
             Version name, given as a string (more common) or as VersionName instance. If None,
             the next available version name for the given artifact is used.
-        metadata: Dict[str, str], optional
+        metadata: Dict[str, Any], optional
             User-defined metadata, saved with the artifact.
-            The metadata keys and values are stored as strings.
+            The metadata keys and values are stored as strings, or list of strings.
         write_mode: WriteMode
             Write mode. If None, the global write mode is used (see `Activity.write_mode`). See
             `pond.conventions.WriteMode` for possible values.
