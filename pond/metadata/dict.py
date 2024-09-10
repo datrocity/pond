@@ -13,7 +13,8 @@ class DictMetadataSource(MetadataSource):
         name: str
             The name of the section represented by this metadata source.
         metadata: dict[str, Any]
-            The dictionary of metadata. Values will be converted to string.
+            The dictionary of metadata. Values will be converted to string (or a list of strings
+            if the value is a list).
         """
         self.name = name
         self.metadata = metadata

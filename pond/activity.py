@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Set, Type, Union
+from typing import Any, Dict, List, Optional, Set, Type, Union
 
 from pond.artifact import Artifact
 from pond.artifact.artifact_registry import ArtifactRegistry, global_artifact_registry
@@ -227,7 +227,7 @@ class Activity:
               data: DataType,
               name: str,
               version_name: Optional[Union[str, VersionName]] = None,
-              metadata: Optional[Dict[str, str]] = None,
+              metadata: Optional[Dict[str, str | List]] = None,
               write_mode: Optional[WriteMode] = None,
               location: Optional[str] = None,
               artifact_class: Optional[Type[Artifact]] = None,
@@ -244,7 +244,7 @@ class Activity:
         version_name: Union[str, VersionName], optional
             Version name, given as a string (more common) or as VersionName instance. If None,
             the next available version name for the given artifact is used.
-        metadata: Dict[str, str], optional
+        metadata: Dict[str, str | List], optional
             User-defined metadata, saved with the artifact.
             The metadata keys and values are stored as strings.
         write_mode: WriteMode
