@@ -1,8 +1,10 @@
+import os.path
 from typing import Any, Dict, Optional, Set, Type, Union
 
 from pond.artifact import Artifact
 from pond.artifact.artifact_registry import ArtifactRegistry, global_artifact_registry
 from pond.conventions import DataType, WriteMode
+from pond.storage.file_datastore import FileDatastore
 from pond.metadata.metadata_source import MetadataSource
 from pond.metadata.dict import DictMetadataSource
 from pond.metadata.manifest import Manifest
@@ -39,8 +41,13 @@ class Activity:
             Root location in the data store where artifacts are read/written. This is used to
             create folder-like groups inside a datastore. This can be, for instance, the name of
             a project or experiment.
-        datastore: Datastore
+        datastore: Datastore | str
             Data store object, representing the storage where the artifacts are read/written.
+            If a string is passed instead, it is interpreted as the base path of a
+            FileDatastore; the artifacts are going to be stored in a directory at the path
+            indicated by the string. The `id` of this datastore is set to the
+            name of the base name of the given path (e.g., for the path `/users/bar/my_datastore`,
+            the `id` is set to `my_datastore`)
         write_mode: WriteMode
             Default write mode for this `Activity` instance. The default mode will be used
             unless one is specified during a write operation. See `pond.conventions.WriteMode` for
@@ -57,6 +64,10 @@ class Activity:
         """
         self.source = source
         self.location = location
+        if isinstance(datastore, str):
+            base_path = os.path.abspath(datastore)
+            id = os.path.basename(base_path)
+            datastore = FileDatastore(id=id, base_path=base_path)  # type: ignore
         self.datastore = datastore
         self.write_mode = write_mode
         self.author = author

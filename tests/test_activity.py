@@ -1,3 +1,4 @@
+import os.path
 from unittest.mock import ANY, Mock
 
 import pytest
@@ -379,3 +380,16 @@ def test_location_can_be_overwritten(tmp_path):
     manifest = activity.read_manifest('meh', location='other_location')
     assert (manifest.collect_section('version')['uri'] ==
             'pond://foostore/other_location/meh/meh/v1')
+
+
+def test_datastore_string_creates_filedatastore(tmp_path):
+    path = str(tmp_path)
+    activity = Activity(
+        source='test_pond.py',
+        datastore=path,
+        location='test_location',
+    )
+    assert isinstance(activity.datastore, FileDatastore)
+    assert activity.datastore.base_path == path
+    expected_id = os.path.split(path)[-1]
+    assert activity.datastore.id == expected_id
