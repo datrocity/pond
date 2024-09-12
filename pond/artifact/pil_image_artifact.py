@@ -26,8 +26,9 @@ class PILImageArtifact(Artifact):
 
         Parameters
         ----------
-        data: Figure
-            A Matplotlib Figure object. It is going to be transformed in a PNG figure.
+        data: Image | Figure
+            A PIL Image or Matplotlib Figure object.
+            A Matplotlib Figure is going to be transformed in an Image.
         metadata: dict
             User-defined metadata, saved with the artifact (optional).
             The metadata keys and values will be stored as strings.
