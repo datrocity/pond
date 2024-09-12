@@ -15,8 +15,6 @@ class Artifact(ABC):
 
     # --- Artifact class interface
 
-    # todo: what is the class_id for?
-
     @classmethod
     def class_id(cls):
         """ String ID to be able to find this class from its name. """
@@ -33,8 +31,6 @@ class Artifact(ABC):
             # todo this exception is not defined here
             raise InvalidArtifactClass(class_id)
         return subclass
-
-    # --- Artifact public interface
 
     def __init__(self, data, metadata=None, data_hash=None):
         """ Create an Artifact.
@@ -61,54 +57,7 @@ class Artifact(ABC):
             metadata = {}
         self.metadata = metadata
 
-
-    @classmethod
-    def read_bytes(cls, file_, metadata=None, data_hash=None, **kwargs):
-        """ Reads the artifact from a binary file.
-
-        Parameters
-        ----------
-        file_: file-like object
-            A file-like object from which the artifact is read, opened in binary mode.
-        metadata: dict or None
-            The metadata for the artifact. If defined, it takes the place of any metadata
-            defined in the artifact itself.
-            Typically, this external artifact metadata comes from an artifact manifest. If the
-            artifact has been written as a `pond` `VersionedArtifact`, then the two sources of
-            metadata are identical.
-        data_hash: str
-            The data hash of the data, if known (for example, when the artifact
-            is read from a Version). If None, the hash is re-computed.
-        kwargs: dict
-            Parameters for the reader.
-
-        Returns
-        -------
-        artifact: Artifact
-            An instance of the artifact.
-        """
-        data, read_metadata = cls._read_bytes(file_, **kwargs)
-        if metadata is None:
-            metadata = read_metadata
-
-        return cls(data, metadata=metadata, data_hash=data_hash)
-
-    # todo why the kwargs
-    def write(self, path, **kwargs):
-        """ Writes the artifact to file.
-
-        Parameters
-        ----------
-        path: str
-            Path to which the artifact is written.
-        kwargs: dict
-            Parameters for the writer.
-
-        """
-        with open(path, 'wb') as f:
-            self.write_bytes(f, **kwargs)
-
-    # --- Abstract interface
+    # --- Artifact abstract interface
 
     @staticmethod
     @abstractmethod
@@ -175,8 +124,53 @@ class Artifact(ABC):
         """
         pass
 
-    def _data_hash(self):
-        return joblib.hash(self.data)
+    # --- Artifact public interface
+
+    @classmethod
+    def read_bytes(cls, file_, metadata=None, data_hash=None, **kwargs):
+        """ Reads the artifact from a binary file.
+
+        Parameters
+        ----------
+        file_: file-like object
+            A file-like object from which the artifact is read, opened in binary mode.
+        metadata: dict or None
+            The metadata for the artifact. If defined, it takes the place of any metadata
+            defined in the artifact itself.
+            Typically, this external artifact metadata comes from an artifact manifest. If the
+            artifact has been written as a `pond` `VersionedArtifact`, then the two sources of
+            metadata are identical.
+        data_hash: str
+            The data hash of the data, if known (for example, when the artifact
+            is read from a Version). If None, the hash is re-computed.
+        kwargs: dict
+            Parameters for the reader.
+
+        Returns
+        -------
+        artifact: Artifact
+            An instance of the artifact.
+        """
+        data, read_metadata = cls._read_bytes(file_, **kwargs)
+        if metadata is None:
+            metadata = read_metadata
+
+        return cls(data, metadata=metadata, data_hash=data_hash)
+
+    # todo why the kwargs
+    def write(self, path, **kwargs):
+        """ Writes the artifact to file.
+
+        Parameters
+        ----------
+        path: str
+            Path to which the artifact is written.
+        kwargs: dict
+            Parameters for the writer.
+
+        """
+        with open(path, 'wb') as f:
+            self.write_bytes(f, **kwargs)
 
     def get_artifact_metadata(self):
         """
@@ -191,3 +185,8 @@ class Artifact(ABC):
         }
         artifact_metadata_source = DictMetadataSource(name='artifact', metadata=artifact_metadata)
         return artifact_metadata_source
+
+    # --- Artifact private interface
+
+    def _data_hash(self):
+        return joblib.hash(self.data)
