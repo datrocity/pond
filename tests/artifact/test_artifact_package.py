@@ -15,7 +15,7 @@ def test_register_on_package_import():
         pd.DataFrame,
         Figure,
         Image,
-        np.array,
+        np.ndarray,
         dict,
     ]
     for class_ in expected_classes:
