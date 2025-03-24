@@ -2,6 +2,7 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest
 
+from pond.artifact.artifact_registry import global_artifact_registry
 from pond.artifact.numpy_array_artifact import NumpyArrayArtifact
 
 
@@ -35,6 +36,13 @@ def test_write_then_read(tmp_path, np_array, metadata):
         content = NumpyArrayArtifact.read_bytes(f)
     assert_almost_equal(np_array, content.data)
     assert content.metadata == {k: str(v) for k, v in artifact.metadata.items()}
+
+
+def test_fetch_from_global_registry(tmp_path, np_array):
+    array_artifacts = global_artifact_registry.get_available_artifacts(data_class=np_array.__class__)
+    assert len(array_artifacts) >= 1
+    all_artifact_types = [artifact.artifact_class for artifact in array_artifacts]
+    assert NumpyArrayArtifact in all_artifact_types
 
 
 def test_data_hash():

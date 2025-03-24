@@ -30,4 +30,4 @@ class NumpyArrayArtifact(Artifact):
         return basename + '.npz'
 
 
-global_artifact_registry.register(artifact_class=NumpyArrayArtifact, data_class=np.array, format='npz')
+global_artifact_registry.register(artifact_class=NumpyArrayArtifact, data_class=np.ndarray, format='npz')
