@@ -101,7 +101,8 @@ class Activity:
             Location in the data store where artifacts are read. If None, the default location
             specified in the constructor is used.
         kwargs: dict
-            Parameters for the artifact reader.
+            Optional parameters that are passed to the artifact reader. Refer to the documentation
+            of the artifact classes for more information.
 
         Return
         ------
@@ -192,7 +193,8 @@ class Activity:
             Location in the data store where artifacts are read. If None, the default location
             specified in the constructor is used.
         kwargs: dict
-            Parameters for the artifact reader.
+            Optional parameters that are passed to the artifact reader. Refer to the documentation
+            of the artifact classes for more information.
 
         Return
         ------
@@ -229,7 +231,8 @@ class Activity:
             Location in the data store where artifacts are read. If None, the default location
             specified in the constructor is used.
         kwargs: dict
-            Parameters for the artifact reader.
+            Optional parameters that are passed to the artifact reader. Refer to the documentation
+            of the artifact classes for more information.
 
         Return
         ------
