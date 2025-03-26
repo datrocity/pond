@@ -109,7 +109,10 @@ def test_read_memmap_from_activity(tmp_path, np_array):
         location='test_location',
     )
 
-    activity.write(np_array, 'foo')
+    activity.write(np_array, 'foo', format='npy')
     foo = activity.read('foo', memmap=True)
 
     assert_almost_equal(np_array, foo)
+    # Check that it's a read-only memmap
+    assert isinstance(foo, np.memmap)
+    assert foo.mode == 'r'
