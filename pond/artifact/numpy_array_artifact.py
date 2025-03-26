@@ -4,6 +4,34 @@ from pond.artifact import Artifact
 from pond.artifact.artifact_registry import global_artifact_registry
 
 
+class NumpyArrayArtifact(Artifact):
+    """ Artifact for numpy arrays.
+
+    The array is saved in .npy format. This format does not allow for saving metadata inside the artifact data file.
+    If you want to save the metadata together with the file, refer to the `NumpyArrayCompressedArtifact` artifact
+    class.
+
+    The artifact data can be read in "memmap" read mode, which allows accessing the numpy array using the usual
+    array interface, while keeping the data on disk. Refer to the `numpy.memmap` documentation for more information.
+    """
+
+    @classmethod
+    def _read_bytes(cls, file_, **kwargs):
+        """ Read a numpy array from a npy binary file. """
+
+        data = np.load(file_.name, allow_pickle=True, mmap_mode="r")
+        metadata = None
+
+        return data, metadata
+
+    def write_bytes(self, file_):
+        np.save(file_, self.data)
+
+    @staticmethod
+    def filename(basename):
+        return basename + '.npy'
+
+
 class NumpyArrayCompressedArtifact(Artifact):
     """ Artifact for numpy arrays.
 
@@ -30,4 +58,5 @@ class NumpyArrayCompressedArtifact(Artifact):
         return basename + '.npz'
 
 
+global_artifact_registry.register(artifact_class=NumpyArrayArtifact, data_class=np.ndarray, format='npy')
 global_artifact_registry.register(artifact_class=NumpyArrayCompressedArtifact, data_class=np.ndarray, format='npz')

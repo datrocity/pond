@@ -1,9 +1,11 @@
+from idlelib.configdialog import is_int
+
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest
 
 from pond.artifact.artifact_registry import global_artifact_registry
-from pond.artifact.numpy_array_artifact import NumpyArrayCompressedArtifact
+from pond.artifact.numpy_array_artifact import NumpyArrayArtifact, NumpyArrayCompressedArtifact
 
 
 @pytest.fixture
@@ -24,7 +26,17 @@ def metadata():
     return metadata
 
 
-def test_write_then_read(tmp_path, np_array, metadata):
+def test_fetch_from_global_registry(tmp_path, np_array):
+    array_artifacts = global_artifact_registry.get_available_artifacts(data_class=np_array.__class__)
+    assert len(array_artifacts) >= 1
+    all_artifact_types = [artifact.artifact_class for artifact in array_artifacts]
+    assert NumpyArrayArtifact in all_artifact_types
+    assert NumpyArrayCompressedArtifact in all_artifact_types
+    # We want the version with metadata to be preferred, and so be registered later.
+    assert all_artifact_types.index(NumpyArrayArtifact) < all_artifact_types.index(NumpyArrayCompressedArtifact)
+
+
+def test_npz_write_then_read(tmp_path, np_array, metadata):
     artifact = NumpyArrayCompressedArtifact(np_array, metadata)
     filename = NumpyArrayCompressedArtifact.filename('test')
     path = tmp_path / filename
@@ -38,14 +50,7 @@ def test_write_then_read(tmp_path, np_array, metadata):
     assert content.metadata == {k: str(v) for k, v in artifact.metadata.items()}
 
 
-def test_fetch_from_global_registry(tmp_path, np_array):
-    array_artifacts = global_artifact_registry.get_available_artifacts(data_class=np_array.__class__)
-    assert len(array_artifacts) >= 1
-    all_artifact_types = [artifact.artifact_class for artifact in array_artifacts]
-    assert NumpyArrayCompressedArtifact in all_artifact_types
-
-
-def test_data_hash():
+def test_npz_data_hash():
     data1 = np.array([1, 2, 3])
     artifact1 = NumpyArrayCompressedArtifact(data1)
 
@@ -54,6 +59,37 @@ def test_data_hash():
 
     data3 = np.array([4, 5, 6])
     artifact3 = NumpyArrayCompressedArtifact(data3)
+
+    assert artifact1.data_hash == artifact2.data_hash
+    assert artifact1.data_hash != artifact3.data_hash
+
+
+def test_npy_write_then_read(tmp_path, np_array):
+    artifact = NumpyArrayArtifact(np_array)
+    filename = NumpyArrayArtifact.filename('test')
+    path = tmp_path / filename
+
+    artifact.write(path)
+    assert path.exists()
+
+    with open(path, 'rb') as f:
+        content = NumpyArrayArtifact.read_bytes(f)
+    assert_almost_equal(np_array, content.data)
+
+    # Check that it's a read-only memmap
+    assert isinstance(content.data, np.memmap)
+    assert content.data.mode == 'r'
+
+
+def test_npz_data_hash():
+    data1 = np.array([1, 2, 3])
+    artifact1 = NumpyArrayArtifact(data1)
+
+    data2 = np.array([1, 2, 3])
+    artifact2 = NumpyArrayArtifact(data2)
+
+    data3 = np.array([4, 5, 6])
+    artifact3 = NumpyArrayArtifact(data3)
 
     assert artifact1.data_hash == artifact2.data_hash
     assert artifact1.data_hash != artifact3.data_hash
