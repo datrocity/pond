@@ -19,6 +19,8 @@ class MockArtifact(Artifact):
     def _read_bytes(cls, file_, **kwargs):
         data = file_.read().decode()
         metadata = {}
+        # We add the kwargs to the metadata, so that we can test if they arrived to destination
+        metadata.update(kwargs)
         return data, metadata
 
     def write_bytes(self, file_, **kwargs):
@@ -138,6 +140,17 @@ def test_read_artifact(activity):
     artifact = activity.read_artifact('foo', version_name='v1')
     assert artifact.data == data
     assert artifact.metadata == metadata
+
+
+def test_read_artifact_with_reader_parameters(activity):
+    """ Can read saved artifacts. """
+    data = 'test_data'
+    activity.write(data, name='foo', artifact_class=MockArtifact)
+
+    # 'foo' and 'bar' are optional parameters destined to the artifact reader
+    artifact = activity.read_artifact('foo', version_name='v1', foo='foo', bar='bar')
+    assert artifact.data == data
+    assert artifact.metadata == {'foo': 'foo', 'bar': 'bar'}
 
 
 def test_read_manifest(activity):

@@ -1,11 +1,11 @@
-from idlelib.configdialog import is_int
-
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest
 
+from pond import Activity
 from pond.artifact.artifact_registry import global_artifact_registry
 from pond.artifact.numpy_array_artifact import NumpyArrayArtifact, NumpyArrayCompressedArtifact
+from pond.storage.file_datastore import FileDatastore
 
 
 @pytest.fixture
@@ -99,3 +99,17 @@ def test_npz_data_hash():
 
     assert artifact1.data_hash == artifact2.data_hash
     assert artifact1.data_hash != artifact3.data_hash
+
+
+def test_read_memmap_from_activity(tmp_path, np_array):
+    datastore = FileDatastore(id='foostore', base_path=tmp_path)
+    activity = Activity(
+        source='test_pond.py',
+        datastore=datastore,
+        location='test_location',
+    )
+
+    activity.write(np_array, 'foo')
+    foo = activity.read('foo', memmap=True)
+
+    assert_almost_equal(np_array, foo)
