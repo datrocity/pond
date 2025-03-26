@@ -4,7 +4,7 @@ from pond.artifact import Artifact
 from pond.artifact.artifact_registry import global_artifact_registry
 
 
-class NumpyArrayArtifact(Artifact):
+class NumpyArrayCompressedArtifact(Artifact):
     """ Artifact for numpy arrays.
 
     The array is saved in .npz format. This format allows to store numpy arrays without installing an additional
@@ -30,4 +30,4 @@ class NumpyArrayArtifact(Artifact):
         return basename + '.npz'
 
 
-global_artifact_registry.register(artifact_class=NumpyArrayArtifact, data_class=np.ndarray, format='npz')
+global_artifact_registry.register(artifact_class=NumpyArrayCompressedArtifact, data_class=np.ndarray, format='npz')
