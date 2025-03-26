@@ -83,7 +83,9 @@ class Activity:
     def read_version(self,
                      name: str,
                      version_name: Optional[Union[str, VersionName]] = None,
-                     location: Optional[str] = None) -> Version:
+                     location: Optional[str] = None,
+                     **kwargs,
+                     ) -> Version:
         """ Read a version, given its name and version name.
 
         If no version name is specified, the latest version is read.
@@ -98,6 +100,8 @@ class Activity:
         location: str, optional
             Location in the data store where artifacts are read. If None, the default location
             specified in the constructor is used.
+        kwargs: dict
+            Parameters for the artifact reader.
 
         Return
         ------
@@ -119,15 +123,16 @@ class Activity:
             location=location,
             datastore=self.datastore,
         )
-        version = versioned_artifact.read(version_name=version_name)
+        version = versioned_artifact.read(version_name=version_name, **kwargs)
         version_id = version.get_uri(self.location, self.datastore)
         self.read_history.add(version_id)
         return version
 
     def read_manifest(self,
-                     name: str,
-                     version_name: Optional[Union[str, VersionName]] = None,
-                     location: Optional[str] = None) -> Manifest:
+                      name: str,
+                      version_name: Optional[Union[str, VersionName]] = None,
+                      location: Optional[str] = None,
+                      ) -> Manifest:
         """ Read a version manifest, given its name and version name.
 
         If no version name is specified, the latest version is read.
@@ -169,7 +174,9 @@ class Activity:
     def read_artifact(self,
                       name: str,
                       version_name: Optional[Union[str, VersionName]] = None,
-                      location: Optional[str] = None) -> Any:
+                      location: Optional[str] = None,
+                      **kwargs,
+                      ) -> Any:
         """ Read an artifact given its name and version name.
 
         If no version name is specified, the latest version is read.
@@ -184,6 +191,8 @@ class Activity:
         location: str, optional
             Location in the data store where artifacts are read. If None, the default location
             specified in the constructor is used.
+        kwargs: dict
+            Parameters for the artifact reader.
 
         Return
         ------
@@ -196,13 +205,15 @@ class Activity:
         `read_manifest` -- Read a version manifest, given its name and version name
         `read_version` -- Read a Version object, including the artifact object and version manifest
         """
-        version = self.read_version(name, version_name, location=location)
+        version = self.read_version(name, version_name, location=location, **kwargs)
         return version.artifact
 
     def read(self,
              name: str,
              version_name: Optional[Union[str, VersionName]] = None,
-             location: Optional[str] = None) -> Any:
+             location: Optional[str] = None,
+             **kwargs,
+             ) -> Any:
         """ Read some data given its name and version name.
 
         If no version name is specified, the latest version is read.
@@ -217,6 +228,8 @@ class Activity:
         location: str, optional
             Location in the data store where artifacts are read. If None, the default location
             specified in the constructor is used.
+        kwargs: dict
+            Parameters for the artifact reader.
 
         Return
         ------
@@ -230,7 +243,7 @@ class Activity:
         `read_version` -- Read a Version object, including the artifact object and version manifest
         """
 
-        artifact = self.read_artifact(name, version_name, location=location)
+        artifact = self.read_artifact(name, version_name, location=location, **kwargs)
         return artifact.data
 
     # TODO version name is a string vs is a VersionName instance

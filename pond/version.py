@@ -64,7 +64,7 @@ class Version:
 
     # todo: store and recover artifact_class from manifest
     @classmethod
-    def read(cls, version_name, artifact_class, location, datastore):
+    def read(cls, version_name, artifact_class, location, datastore, **kwargs):
         manifest = cls.read_manifest(version_name, location, datastore)
 
         # Location of the version folder
@@ -76,7 +76,7 @@ class Version:
         user_metadata = manifest.collect_section('user')
         data_hash = manifest.collect_section('artifact').get('data_hash', None)
         with datastore.open(data_location, 'rb') as f:
-            artifact = artifact_class.read_bytes(f, metadata=user_metadata, data_hash=data_hash)
+            artifact = artifact_class.read_bytes(f, metadata=user_metadata, data_hash=data_hash, **kwargs)
 
         version = cls(
             artifact_name=version_metadata['artifact_name'],

@@ -102,7 +102,7 @@ class VersionedArtifact:
 
     # --- VersionedArtifact public interface
 
-    def read(self, version_name: Optional[Union[str, VersionName]] = None) -> Version:
+    def read(self, version_name: Optional[Union[str, VersionName]] = None, **kwargs) -> Version:
         """ Read a version of the artifact.
 
         Parameters
@@ -110,6 +110,8 @@ class VersionedArtifact:
         version_name: Union[str, VersionName], optional
             Version name, given as a string (more common) or as VersionName instance. If None,
             the latest version name for the given artifact is used.
+        kwargs: dict
+            Parameters for the artifact reader.
 
         Raises
         ------
@@ -133,6 +135,7 @@ class VersionedArtifact:
             artifact_class=self.artifact_class,
             datastore=self.datastore,
             location=self.versions_location,
+            **kwargs,
         )
 
         return version
