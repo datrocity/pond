@@ -116,3 +116,8 @@ def test_read_memmap_from_activity(tmp_path, np_array):
     # Check that it's a read-only memmap
     assert isinstance(foo, np.memmap)
     assert foo.mode == 'r'
+
+    # Error is raised when using `memmap` keyword with `npz` artifact
+    activity.write(np_array, 'bar', format='npz')
+    with pytest.raises(TypeError):
+        activity.read('bar', memmap=True)

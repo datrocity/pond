@@ -44,7 +44,7 @@ class NumpyArrayCompressedArtifact(Artifact):
     """
 
     @classmethod
-    def _read_bytes(cls, file_, **kwargs):
+    def _read_bytes(cls, file_):
         """ Read a numpy array from a npy binary file. """
         content = np.load(file_, allow_pickle=True)
         data = content['data']
