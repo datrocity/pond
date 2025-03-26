@@ -16,13 +16,13 @@ class DictArtifact(Artifact):
         return basename + '.json'
 
     @classmethod
-    def _read_bytes(cls, file_, **kwargs):
+    def _read_bytes(cls, file_):
         txt = file_.read().decode()
         data = json.loads(txt)
         metadata = data.pop('__metadata__', dict())
         return data, metadata
 
-    def write_bytes(self, file_, **kwargs):
+    def write_bytes(self, file_):
         dict_ = dict(self.data)
         dict_['__metadata__'] = {str(k): str(v) for k, v in self.metadata.items()}
         txt = json.dumps(dict_)

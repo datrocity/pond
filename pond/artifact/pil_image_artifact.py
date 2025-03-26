@@ -44,7 +44,7 @@ class PILImageArtifact(Artifact):
     # --- Artifact class interface
 
     @classmethod
-    def _read_bytes(cls, file_, **kwargs):
+    def _read_bytes(cls, file_):
         """ Read a Matlab figure artifact from CSV file. """
         # todo "copy" is because opening the file is lazy; is there a better way?
         image = Image.open(file_).copy()
@@ -57,7 +57,7 @@ class PILImageArtifact(Artifact):
 
     # --- Artifact interface
 
-    def write_bytes(self, file_, **kwargs):
+    def write_bytes(self, file_):
         png_metadata = PngInfo()
         for key, value in self.metadata.items():
             png_metadata.add_text(key, str(value))
@@ -66,5 +66,4 @@ class PILImageArtifact(Artifact):
 
 
 global_artifact_registry.register(artifact_class=PILImageArtifact, data_class=Image, format='png')
-global_artifact_registry.register(artifact_class=PILImageArtifact, data_class=Figure,
-                                  format='png')
+global_artifact_registry.register(artifact_class=PILImageArtifact, data_class=Figure, format='png')

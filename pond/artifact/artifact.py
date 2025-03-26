@@ -93,7 +93,8 @@ class Artifact(ABC):
             The data hash of the data, if known (for example, when the artifact
             is read from a Version). If None, the hash is re-computed.
         kwargs: dict
-            Parameters for the reader.
+            Optional parameters for the reader.
+            Refer to the documentation of the artifact classes for more information.
 
         Returns
         -------
@@ -119,7 +120,8 @@ class Artifact(ABC):
         file_: file-like object
             A file-like object to which the artifact is written, opened in binary mode.
         kwargs: dict
-            Parameters for the writer.
+            Optional parameters for the writer.
+            Refer to the documentation of the artifact classes for more information.
 
         """
         pass
@@ -144,7 +146,8 @@ class Artifact(ABC):
             The data hash of the data, if known (for example, when the artifact
             is read from a Version). If None, the hash is re-computed.
         kwargs: dict
-            Parameters for the reader.
+            Optional parameters for the reader.
+            Refer to the documentation of the artifact classes for more information.
 
         Returns
         -------
@@ -157,7 +160,6 @@ class Artifact(ABC):
 
         return cls(data, metadata=metadata, data_hash=data_hash)
 
-    # todo why the kwargs
     def write(self, path, **kwargs):
         """ Writes the artifact to file.
 
@@ -166,7 +168,8 @@ class Artifact(ABC):
         path: str
             Path to which the artifact is written.
         kwargs: dict
-            Parameters for the writer.
+            Optional parameters for the writer.
+            Refer to the documentation of the artifact classes for more information.
 
         """
         with open(path, 'wb') as f:
