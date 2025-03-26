@@ -87,7 +87,7 @@ def test_npy_write_then_read(tmp_path, np_array):
     assert content.data.mode == 'r'
 
 
-def test_npz_data_hash():
+def test_npy_data_hash():
     data1 = np.array([1, 2, 3])
     artifact1 = NumpyArrayArtifact(data1)
 
