@@ -72,10 +72,16 @@ def test_npy_write_then_read(tmp_path, np_array):
     artifact.write(path)
     assert path.exists()
 
+    # Read in memory
     with open(path, 'rb') as f:
         content = NumpyArrayArtifact.read_bytes(f)
     assert_almost_equal(np_array, content.data)
+    assert not isinstance(content.data, np.memmap)
 
+    # Read as a memmap
+    with open(path, 'rb') as f:
+        content = NumpyArrayArtifact.read_bytes(f, memmap=True)
+    assert_almost_equal(np_array, content.data)
     # Check that it's a read-only memmap
     assert isinstance(content.data, np.memmap)
     assert content.data.mode == 'r'

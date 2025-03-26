@@ -16,10 +16,14 @@ class NumpyArrayArtifact(Artifact):
     """
 
     @classmethod
-    def _read_bytes(cls, file_, **kwargs):
+    def _read_bytes(cls, file_, memmap=False):
         """ Read a numpy array from a npy binary file. """
 
-        data = np.load(file_.name, allow_pickle=True, mmap_mode="r")
+        if memmap:
+            mmap_mode = 'r'
+        else:
+            mmap_mode = None
+        data = np.load(file_.name, allow_pickle=True, mmap_mode=mmap_mode)
         metadata = None
 
         return data, metadata
