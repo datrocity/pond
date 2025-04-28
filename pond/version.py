@@ -78,7 +78,7 @@ class Version:
         # when the manifest did not have an "artifact" section
         artifact_metadata = manifest.collect_section('artifact')
         if artifact_metadata is None:
-            # We don't read the data hash, it's going to be computed on the fly
+            # We can't read the data hash, it's going to be computed on the fly
             data_hash = None
         else:
             data_hash = artifact_metadata.get('data_hash', None)
