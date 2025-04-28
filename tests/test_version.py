@@ -209,12 +209,6 @@ def test_data_hash_not_recomputed_on_read(tmp_path, monkeypatch):
 
 
 class MockArtifactWithNoMetadata(Artifact):
-    @classmethod
-    def read_bytes(cls, file_, metadata=None, data_hash=None, **kwargs):
-        artifact = super().read_bytes(file_, metadata, data_hash)
-        artifact.filename = file_.name
-        artifact.read_kwargs = kwargs
-        return artifact
 
     @classmethod
     def _read_bytes(cls, file_, **kwargs):
