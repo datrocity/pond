@@ -3,6 +3,7 @@ from datetime import datetime
 import pandas as pd
 import pytest
 
+from pond.artifact import Artifact
 from pond.artifact.pandas_dataframe_artifact import PandasDataFrameArtifact
 from pond.exceptions import VersionDoesNotExist
 from pond.metadata.metadata_source import MetadataSource
@@ -205,3 +206,57 @@ def test_data_hash_not_recomputed_on_read(tmp_path, monkeypatch):
         pytest.fail("_data_hash_was_called")
     reloaded_data_hash = reloaded_version.manifest.collect_section('artifact')['data_hash']
     assert reloaded_data_hash == expected_data_hash
+
+
+class MockArtifactWithNoMetadata(Artifact):
+    @classmethod
+    def read_bytes(cls, file_, metadata=None, data_hash=None, **kwargs):
+        artifact = super().read_bytes(file_, metadata, data_hash)
+        artifact.filename = file_.name
+        artifact.read_kwargs = kwargs
+        return artifact
+
+    @classmethod
+    def _read_bytes(cls, file_, **kwargs):
+        data = file_.read().decode()
+        metadata = {}
+        return data, metadata
+
+    def write_bytes(self, file_, **kwargs):
+        self.filename = file_.name
+        self.write_kwargs = kwargs
+
+    @staticmethod
+    def filename(basename):
+        return basename
+
+    def get_artifact_metadata(self):
+        # Do not return artifact metadata, as in older versions
+        return None
+
+
+def test_artifact_section_not_in_manifest_on_read(tmp_path):
+    # Reproduces issue https://github.com/datrocity/pond/issues/25
+    # Allow backwards compatibility for the data saved on older versions of pond,
+    # when the manifest did not have an "artifact" section
+    data = [1, 2, 3]
+    artifact_name = 'meh'
+    version = Version(
+        artifact_name=artifact_name,
+        version_name=SimpleVersionName(version_number=42),
+        artifact=MockArtifactWithNoMetadata(data=data),
+    )
+    store = FileDatastore(id='foostore', base_path=str(tmp_path))
+    manifest = Manifest.from_nested_dict({})
+    version.write(location='abc', datastore=store, manifest=manifest)
+
+    reloaded_version = Version.read(
+        version_name=SimpleVersionName(version_number=42),
+        artifact_class=MockArtifactWithNoMetadata,
+        location='abc',
+        datastore=store,
+    )
+    # The "artifact" section was not saved
+    assert 'artifact' not in reloaded_version.manifest.collect()
+    # The data hash is computed on the fly, nevertheless
+    assert reloaded_version.artifact.data_hash is not None

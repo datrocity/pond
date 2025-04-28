@@ -74,7 +74,15 @@ class Version:
         data_filename = version_metadata['filename']
         data_location = version_data_location(version_location_, data_filename)
         user_metadata = manifest.collect_section('user')
-        data_hash = manifest.collect_section('artifact').get('data_hash', None)
+        # Backwards compatibility code for data saved on older versions of pond,
+        # when the manifest did not have an "artifact" section
+        artifact_metadata = manifest.collect_section('artifact')
+        if artifact_metadata is None:
+            # We don't read the data hash, it's going to be computed on the fly
+            data_hash = None
+        else:
+            data_hash = artifact_metadata.get('data_hash', None)
+
         with datastore.open(data_location, 'rb') as f:
             artifact = artifact_class.read_bytes(f, metadata=user_metadata, data_hash=data_hash, **kwargs)
 
