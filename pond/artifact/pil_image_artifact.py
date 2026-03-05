@@ -9,11 +9,12 @@ from pond.artifact.artifact_registry import global_artifact_registry
 def _image_from_matplotlib_fig(fig):
     """ Transform a Matplotlib Figure in a PIL RGB Image object"""
     fig.canvas.draw()
-    image = Image.frombytes(
-        'RGB',
+    buf = fig.canvas.buffer_rgba()
+    image = Image.frombuffer(
+        'RGBA',
         fig.canvas.get_width_height(),
-        fig.canvas.tostring_rgb()
-    )
+        buf,
+    ).convert('RGB')
     return image
 
 

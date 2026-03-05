@@ -9,7 +9,7 @@ from pond.version_name import DateTimeVersionName, SimpleVersionName
 from pond.versioned_artifact import VersionedArtifact
 
 
-class MockArtifact(Artifact):
+class VersionedMockArtifact(Artifact):
     @classmethod
     def _read_bytes(cls, file_, **kwargs):
         data = file_.read().decode()
@@ -31,7 +31,7 @@ def versioned_artifact(tmp_path):
         artifact_name='test_artifact',
         location='test_location',
         datastore=datastore,
-        artifact_class=MockArtifact,
+        artifact_class=VersionedMockArtifact,
         version_name_class=SimpleVersionName,
     )
     return versioned_artifact
@@ -59,7 +59,7 @@ def test_versioned_artifact_write_then_read(versioned_artifact):
 
     # Reload the first version
     reloaded_artifact = versioned_artifact.read(version_name=first_version_name)
-    assert isinstance(reloaded_artifact.artifact, MockArtifact)
+    assert isinstance(reloaded_artifact.artifact, VersionedMockArtifact)
     assert reloaded_artifact.artifact.data == data
     assert reloaded_artifact.artifact.metadata == metadata
 
