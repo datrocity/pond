@@ -1,0 +1,50 @@
+[project]
+name = "pond"
+version = "0.2.0"
+description = "A library to keep scientists from losing their minds: storage, versioning, and lineage of artifacts"
+readme = "README.md"
+license = {text = "BSD-3-Clause"}
+authors = [
+    { name = "Pietro Berkes", email = "pietro.berkes@proton.me" },
+    { name = "Lisa Schwetlick", email = "mail@lisaschwetlick.de" },
+    { name = "Samuel Suter", email = "samuel.suter@nagra.com" },
+]
+requires-python = ">=3.10"
+dependencies = [
+    "joblib>=1.4,<2",
+    "matplotlib>=3.9,<4",
+    "numpy>=1.26,<3",
+    "pandas>=2,<3",
+    "pillow>=10,<12",
+    "pyyaml>=6,<7",
+]
+
+[project.optional-dependencies]
+git = ["GitPython>=3.1,<4"]
+dask = ["dask>=2024"]
+dev = [
+    "pond[git,dask]",
+    "flake8>=7,<8",
+    "jupyter>=1,<2",
+    "mypy>=1.13,<2",
+    "pytest>=8,<9",
+    "yapf>=0.40,<1",
+    "sphinx",
+    "sphinx-rtd-theme",
+]
+
+[project.urls]
+Homepage = "https://github.com/nagra-insight/pond"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = { find = {} }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+strict = true

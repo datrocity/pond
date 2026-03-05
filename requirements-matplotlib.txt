@@ -1,2 +1,0 @@
-matplotlib==3.6.*
-pillow==9.4.*
