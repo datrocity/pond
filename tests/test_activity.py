@@ -14,7 +14,7 @@ from pond.storage.file_datastore import FileDatastore
 from pond.version_name import SimpleVersionName
 
 
-class MockArtifact(Artifact):
+class ActivityMockArtifact(Artifact):
     @classmethod
     def _read_bytes(cls, file_, **kwargs):
         data = file_.read().decode()
@@ -53,7 +53,7 @@ def test_pond_write_then_read_version_explicit(activity):
     # Save first version of the data
     data = 'test_data'
     metadata = {'test': 'xyz'}
-    version = activity.write(data, name='foo', artifact_class=MockArtifact, metadata=metadata)
+    version = activity.write(data, name='foo', artifact_class=ActivityMockArtifact, metadata=metadata)
 
     first_version_name = SimpleVersionName.first()
     assert version.version_name == first_version_name
@@ -61,12 +61,12 @@ def test_pond_write_then_read_version_explicit(activity):
     assert datastore.exists(
         versioned_artifact_location(location, 'foo'),
     )
-    assert isinstance(version.artifact, MockArtifact)
+    assert isinstance(version.artifact, ActivityMockArtifact)
 
     # Write second version of the data
     data2 = 'test_data2'
     metadata2 = {'test': 'xyz2'}
-    version2 = activity.write(data2, name='foo', artifact_class=MockArtifact, metadata=metadata2)
+    version2 = activity.write(data2, name='foo', artifact_class=ActivityMockArtifact, metadata=metadata2)
     assert version2.version_name == SimpleVersionName.next(first_version_name)
 
     # Read the latest version
@@ -103,7 +103,7 @@ def test_pond_write_then_read_version_explicit(activity):
 def test_pond_write_then_read_version_implicit(tmp_path):
     # Can write and read artifacts, finding an appropriate artifact class
     registry = ArtifactRegistry()
-    registry.register(artifact_class=MockArtifact, data_class=str)
+    registry.register(artifact_class=ActivityMockArtifact, data_class=str)
     datastore = FileDatastore(id='foostore', base_path=tmp_path)
     activity = Activity(
         source='test_pond.py',
@@ -118,14 +118,14 @@ def test_pond_write_then_read_version_implicit(tmp_path):
     data = 'test_data'
     metadata = {'test': 'xyz'}
     version = activity.write(data, name='foo', metadata=metadata)
-    assert isinstance(version.artifact, MockArtifact)
+    assert isinstance(version.artifact, ActivityMockArtifact)
 
 
 def test_read_data(activity):
     """ Can read saved data. """
     data = 'test_data'
     metadata = {'test': 'xyz'}
-    activity.write(data, name='foo', artifact_class=MockArtifact, metadata=metadata)
+    activity.write(data, name='foo', artifact_class=ActivityMockArtifact, metadata=metadata)
 
     data_reloaded = activity.read('foo', version_name='v1')
     assert data_reloaded == data
@@ -135,7 +135,7 @@ def test_read_artifact(activity):
     """ Can read saved artifacts. """
     data = 'test_data'
     metadata = {'test': 'xyz'}
-    activity.write(data, name='foo', artifact_class=MockArtifact, metadata=metadata)
+    activity.write(data, name='foo', artifact_class=ActivityMockArtifact, metadata=metadata)
 
     artifact = activity.read_artifact('foo', version_name='v1')
     assert artifact.data == data
@@ -145,7 +145,7 @@ def test_read_artifact(activity):
 def test_read_artifact_with_reader_parameters(activity):
     """ Can read saved artifacts. """
     data = 'test_data'
-    activity.write(data, name='foo', artifact_class=MockArtifact)
+    activity.write(data, name='foo', artifact_class=ActivityMockArtifact)
 
     # 'foo' and 'bar' are optional parameters destined to the artifact reader
     artifact = activity.read_artifact('foo', version_name='v1', foo='foo', bar='bar')
@@ -157,7 +157,7 @@ def test_read_manifest(activity):
     """ Can read version manifest. """
     data = 'test_data'
     metadata = {'test': 'xyz'}
-    version = activity.write(data, name='foo', artifact_class=MockArtifact, metadata=metadata)
+    version = activity.write(data, name='foo', artifact_class=ActivityMockArtifact, metadata=metadata)
 
     manifest = activity.read_manifest('foo', version_name='v1')
     assert manifest.collect() == version.manifest.collect()
@@ -186,14 +186,14 @@ def test_activity_metadata():
 
 
 def test_write_inputs_to_metadata(activity):
-    activity.write('123', name='meh', artifact_class=MockArtifact)
-    activity.write('456', name='bah', artifact_class=MockArtifact)
-    activity.write('456', name='bah', artifact_class=MockArtifact)
+    activity.write('123', name='meh', artifact_class=ActivityMockArtifact)
+    activity.write('456', name='bah', artifact_class=ActivityMockArtifact)
+    activity.write('456', name='bah', artifact_class=ActivityMockArtifact)
 
     meh = activity.read('meh')
     bah_version = activity.read_version('bah')
 
-    activity.write('789', name='uzz', artifact_class=MockArtifact)
+    activity.write('789', name='uzz', artifact_class=ActivityMockArtifact)
     uzz_version = activity.read_version('uzz')
     activity_metadata = uzz_version.manifest.collect_section('activity')
 
@@ -203,25 +203,25 @@ def test_write_inputs_to_metadata(activity):
 
 
 def test_write_mode_error_if_exists(activity):
-    activity.write('123', name='meh', artifact_class=MockArtifact, version_name='v1')
+    activity.write('123', name='meh', artifact_class=ActivityMockArtifact, version_name='v1')
     with pytest.raises(VersionAlreadyExists):
         activity.write(
             data='234',
             name='meh',
-            artifact_class=MockArtifact,
+            artifact_class=ActivityMockArtifact,
             version_name='v1',
             write_mode=WriteMode.ERROR_IF_EXISTS,
         )
 
 
 def test_write_mode_overwrite(activity):
-    activity.write('123', name='meh', artifact_class=MockArtifact)
+    activity.write('123', name='meh', artifact_class=ActivityMockArtifact)
 
     # No exception is raised when overwriting v1
     activity.write(
         data='234',
         name='meh',
-        artifact_class=MockArtifact,
+        artifact_class=ActivityMockArtifact,
         version_name='v1',
         write_mode=WriteMode.OVERWRITE,
     )
@@ -235,13 +235,13 @@ def test_write_mode_overwrite(activity):
 
 
 def test_write_mode_overwrite_latest(activity):
-    activity.write('123', name='meh', artifact_class=MockArtifact)
+    activity.write('123', name='meh', artifact_class=ActivityMockArtifact)
 
     # No exception is raised when overwriting v1
     activity.write(
         data='234',
         name='meh',
-        artifact_class=MockArtifact,
+        artifact_class=ActivityMockArtifact,
         write_mode=WriteMode.OVERWRITE,
         # no version name specified
     )
@@ -258,7 +258,7 @@ def test_write_mode_write_on_change(activity):
     activity.write(
         data='123',
         name='meh',
-        artifact_class=MockArtifact,
+        artifact_class=ActivityMockArtifact,
         write_mode=WriteMode.WRITE_ON_CHANGE,
     )
     first_v1_version = activity.read_version('meh')
@@ -271,7 +271,7 @@ def test_write_mode_write_on_change(activity):
     activity.write(
         data='123',
         name='meh',
-        artifact_class=MockArtifact,
+        artifact_class=ActivityMockArtifact,
         write_mode=WriteMode.WRITE_ON_CHANGE,
     )
     # The latest version is still v1
@@ -288,7 +288,7 @@ def test_write_mode_write_on_change(activity):
     activity.write(
         data='234',
         name='meh',
-        artifact_class=MockArtifact,
+        artifact_class=ActivityMockArtifact,
         write_mode=WriteMode.WRITE_ON_CHANGE,
     )
     # The latest version is now v2
@@ -301,14 +301,14 @@ def test_write_mode_write_on_change_cant_write_old_version(activity):
     activity.write(
         data='123',
         name='meh',
-        artifact_class=MockArtifact,
+        artifact_class=ActivityMockArtifact,
         write_mode=WriteMode.WRITE_ON_CHANGE,
     )
 
     activity.write(
         data='234',
         name='meh',
-        artifact_class=MockArtifact,
+        artifact_class=ActivityMockArtifact,
         write_mode=WriteMode.WRITE_ON_CHANGE,
     )
 
@@ -316,7 +316,7 @@ def test_write_mode_write_on_change_cant_write_old_version(activity):
     activity.write(
         data='123',
         name='meh',
-        artifact_class=MockArtifact,
+        artifact_class=ActivityMockArtifact,
         write_mode=WriteMode.WRITE_ON_CHANGE,
         version_name='v2'
     )
@@ -326,7 +326,7 @@ def test_write_mode_write_on_change_cant_write_old_version(activity):
         activity.write(
             data='123',
             name='meh',
-            artifact_class=MockArtifact,
+            artifact_class=ActivityMockArtifact,
             write_mode=WriteMode.WRITE_ON_CHANGE,
             version_name='v1'
         )
@@ -346,14 +346,14 @@ def test_global_write_mode_overwrite(monkeypatch, tmp_path):
     monkeypatch.setattr(pond.versioned_artifact.VersionedArtifact, "write", write_mock)
 
     # 1. If we don't specify a write mode in activity.write, the global one is used
-    activity.write(data='123', name='meh', artifact_class=MockArtifact)
+    activity.write(data='123', name='meh', artifact_class=ActivityMockArtifact)
     write_mock.assert_called_with(
         write_mode=global_mode,
         data='123', manifest=ANY, version_name=ANY,
     )
     # 2. If we specify a write mode in activity.write, that one is used
     local_mode = WriteMode.OVERWRITE
-    activity.write(data='123', name='meh', write_mode=local_mode, artifact_class=MockArtifact)
+    activity.write(data='123', name='meh', write_mode=local_mode, artifact_class=ActivityMockArtifact)
     write_mock.assert_called_with(
         write_mode=local_mode,
         data='123', manifest=ANY, version_name=ANY,
@@ -371,9 +371,9 @@ def test_location_can_be_overwritten(tmp_path):
     )
 
     # We write an artifact to the default location
-    activity.write(data='123', name='meh', artifact_class=MockArtifact)
+    activity.write(data='123', name='meh', artifact_class=ActivityMockArtifact)
     # We write another artifact with the same data to another location
-    activity.write(data='234', name='meh', artifact_class=MockArtifact, location='other_location')
+    activity.write(data='234', name='meh', artifact_class=ActivityMockArtifact, location='other_location')
 
     # We read the artfact from the default location, first implicitly
     data = activity.read('meh')
