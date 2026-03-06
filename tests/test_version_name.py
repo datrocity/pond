@@ -68,23 +68,32 @@ def test_date_time_version_name_next_not_compatible():
         DateTimeVersionName.next(prev)
 
 
-def test_ordering():
+def test_ordering_simple_version_names():
+    versions = ["v1", "v10", "v2"]
+    names = sorted([VersionName.from_string(version) for version in versions])
+
+    expected = ["v1", "v2", "v10"]
+    assert [str(name) for name in names] == expected
+
+
+def test_ordering_datetime_version_names():
     versions = [
         "2018-12-04 03:28:12",
-        "v1",
         "2018-01-01 10:00:12",
-        "v10",
-        "v2",
         "2018-01-01",
     ]
     names = sorted([VersionName.from_string(version) for version in versions])
 
     expected = [
         "2018-01-01 00:00:00",
-        '2018-01-01 10:00:12',
-        '2018-12-04 03:28:12',
-        'v1',
-        'v2',
-        'v10',
+        "2018-01-01 10:00:12",
+        "2018-12-04 03:28:12",
     ]
     assert [str(name) for name in names] == expected
+
+
+def test_comparing_incompatible_version_names_raises():
+    simple = SimpleVersionName(1)
+    dt = DateTimeVersionName.from_string("2020-01-22 01:02:03")
+    with pytest.raises(IncompatibleVersionName):
+        simple < dt

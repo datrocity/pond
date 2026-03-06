@@ -1,16 +1,9 @@
 from abc import ABC, abstractmethod
-from datetime import datetime, date, timedelta
-from typing import Any, Type, Optional, Union
+from datetime import date, datetime, timedelta
+from typing import Any, Optional, Type, Union
 import re
 
 from pond.exceptions import IncompatibleVersionName, InvalidVersionName
-
-
-# todo: remove, every artifact only has one version name class
-def _compare_classnames(this: Any, that: Any) -> int:
-    a = this.__class__.__name__
-    b = that.__class__.__name__
-    return 0 if a == b else (-1 if a < b else 1)
 
 
 class VersionName(ABC):
@@ -116,7 +109,9 @@ class VersionName(ABC):
 
     def __cmp__(self, other: 'VersionName') -> int:
         cmp = self._partial_compare(other)
-        return cmp if cmp is not None else _compare_classnames(self, other)
+        if cmp is None:
+            raise IncompatibleVersionName(other, self.__class__)
+        return cmp
 
     def __eq__(self, other: Any) -> bool:
         return self._partial_compare(other) == 0
@@ -186,6 +181,7 @@ class SimpleVersionName(VersionName):
 
 
 # todo: does this worlk?
+
 
 class DateTimeVersionName(VersionName):
     """DateTime version names are versions in the form of an ISO date time with space as a time
